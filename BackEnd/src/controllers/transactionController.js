@@ -1,0 +1,218 @@
+const supabase = require('../config/supabase');
+const { upsertMonthlyAnalytics } = require('../services/analyticsService');
+
+const VALID_CATEGORIES = ['Belanja', 'Kesehatan', 'Hiburan', 'Sosial', 'Hewan Peliharaan'];
+const VALID_TYPES      = ['income', 'expense'];
+
+/** Derive 'YYYY-MM' from a date string 'YYYY-MM-DD' */
+function monthFromDate(dateStr) {
+  return dateStr.substring(0, 7);
+}
+
+// ── POST /api/transactions ────────────────────────────────────────────────────
+async function createTransaction(req, res) {
+  const { type, amount, category, description, date, is_recurring, recurring_id } = req.body;
+  const userId = req.user.id;
+
+  // Validation
+  if (!type || !VALID_TYPES.includes(type)) {
+    return res.status(400).json({ success: false, error: `type must be one of: ${VALID_TYPES.join(', ')}` });
+  }
+  if (!amount || typeof amount !== 'number' || amount <= 0) {
+    return res.status(400).json({ success: false, error: 'amount must be a positive number' });
+  }
+  if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    return res.status(400).json({ success: false, error: 'date is required in YYYY-MM-DD format' });
+  }
+  if (type === 'expense') {
+    if (!category) {
+      return res.status(400).json({ success: false, error: 'category is required for expense transactions' });
+    }
+    if (!VALID_CATEGORIES.includes(category)) {
+      return res.status(400).json({ success: false, error: `category must be one of: ${VALID_CATEGORIES.join(', ')}` });
+    }
+  }
+
+  const payload = {
+    user_id: userId,
+    type,
+    amount,
+    date,
+    description: description || null,
+    is_recurring: is_recurring || false,
+    recurring_id: recurring_id || null,
+    category: type === 'income' ? null : category,
+  };
+
+  const { data, error } = await supabase
+    .from('transactions')
+    .insert(payload)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('[createTransaction]', error);
+    return res.status(500).json({ success: false, error: error.message });
+  }
+
+  // Fire-and-forget analytics update
+  upsertMonthlyAnalytics(userId, monthFromDate(date));
+
+  return res.status(201).json({ success: true, data });
+}
+
+// ── GET /api/transactions ─────────────────────────────────────────────────────
+async function listTransactions(req, res) {
+  const userId = req.user.id;
+  const { type, category, month, year } = req.query;
+  const page  = Math.max(1, parseInt(req.query.page  || '1', 10));
+  const limit = Math.min(100, Math.max(1, parseInt(req.query.limit || '20', 10)));
+  const offset = (page - 1) * limit;
+
+  let query = supabase
+    .from('transactions')
+    .select('*', { count: 'exact' })
+    .eq('user_id', userId)
+    .order('date', { ascending: false })
+    .range(offset, offset + limit - 1);
+
+  if (type && VALID_TYPES.includes(type))           query = query.eq('type', type);
+  if (category && VALID_CATEGORIES.includes(category)) query = query.eq('category', category);
+  if (month && /^\d{4}-\d{2}$/.test(month))         query = query.like('date', `${month}-%`);
+  if (year && /^\d{4}$/.test(year))                 query = query.like('date', `${year}-%`);
+
+  const { data, error, count } = await query;
+
+  if (error) {
+    console.error('[listTransactions]', error);
+    return res.status(500).json({ success: false, error: error.message });
+  }
+
+  return res.json({
+    success: true,
+    data,
+    pagination: { page, limit, total: count, totalPages: Math.ceil(count / limit) },
+  });
+}
+
+// ── GET /api/transactions/:id ─────────────────────────────────────────────────
+async function getTransaction(req, res) {
+  const { data, error } = await supabase
+    .from('transactions')
+    .select('*')
+    .eq('id', req.params.id)
+    .eq('user_id', req.user.id)
+    .maybeSingle();
+
+  if (error) {
+    console.error('[getTransaction]', error);
+    return res.status(500).json({ success: false, error: error.message });
+  }
+  if (!data) return res.status(404).json({ success: false, error: 'Transaction not found' });
+
+  return res.json({ success: true, data });
+}
+
+// ── PUT /api/transactions/:id ─────────────────────────────────────────────────
+async function updateTransaction(req, res) {
+  const userId = req.user.id;
+  const { id }  = req.params;
+
+  // Fetch existing to get the date (for analytics re-trigger)
+  const { data: existing, error: fetchError } = await supabase
+    .from('transactions')
+    .select('date, type')
+    .eq('id', id)
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  if (fetchError) return res.status(500).json({ success: false, error: fetchError.message });
+  if (!existing)  return res.status(404).json({ success: false, error: 'Transaction not found' });
+
+  const { amount, category, description, date } = req.body;
+
+  // Build update payload — only allowed fields
+  const updates = {};
+  if (amount !== undefined) {
+    if (typeof amount !== 'number' || amount <= 0)
+      return res.status(400).json({ success: false, error: 'amount must be a positive number' });
+    updates.amount = amount;
+  }
+  if (category !== undefined) {
+    if (!VALID_CATEGORIES.includes(category))
+      return res.status(400).json({ success: false, error: `Invalid category` });
+    if (existing.type === 'income')
+      return res.status(400).json({ success: false, error: 'Cannot set category on income transaction' });
+    updates.category = category;
+  }
+  if (description !== undefined) updates.description = description;
+  if (date !== undefined) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date))
+      return res.status(400).json({ success: false, error: 'date must be in YYYY-MM-DD format' });
+    updates.date = date;
+  }
+
+  if (Object.keys(updates).length === 0)
+    return res.status(400).json({ success: false, error: 'No valid fields to update' });
+
+  const { data, error } = await supabase
+    .from('transactions')
+    .update(updates)
+    .eq('id', id)
+    .eq('user_id', userId)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('[updateTransaction]', error);
+    return res.status(500).json({ success: false, error: error.message });
+  }
+
+  // Re-trigger analytics for original month and new month (if date changed)
+  const originalMonth = monthFromDate(existing.date);
+  const newMonth      = monthFromDate(updates.date || existing.date);
+  upsertMonthlyAnalytics(userId, newMonth);
+  if (originalMonth !== newMonth) upsertMonthlyAnalytics(userId, originalMonth);
+
+  return res.json({ success: true, data });
+}
+
+// ── DELETE /api/transactions/:id ──────────────────────────────────────────────
+async function deleteTransaction(req, res) {
+  const userId = req.user.id;
+  const { id }  = req.params;
+
+  // Fetch first to get date for analytics
+  const { data: existing, error: fetchError } = await supabase
+    .from('transactions')
+    .select('date')
+    .eq('id', id)
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  if (fetchError) return res.status(500).json({ success: false, error: fetchError.message });
+  if (!existing)  return res.status(404).json({ success: false, error: 'Transaction not found' });
+
+  const { error } = await supabase
+    .from('transactions')
+    .delete()
+    .eq('id', id)
+    .eq('user_id', userId);
+
+  if (error) {
+    console.error('[deleteTransaction]', error);
+    return res.status(500).json({ success: false, error: error.message });
+  }
+
+  upsertMonthlyAnalytics(userId, monthFromDate(existing.date));
+
+  return res.json({ success: true, data: { message: 'Transaction deleted' } });
+}
+
+module.exports = {
+  createTransaction,
+  listTransactions,
+  getTransaction,
+  updateTransaction,
+  deleteTransaction,
+};
