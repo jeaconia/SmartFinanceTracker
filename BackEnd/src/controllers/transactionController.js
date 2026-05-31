@@ -76,10 +76,18 @@ async function listTransactions(req, res) {
     .order('date', { ascending: false })
     .range(offset, offset + limit - 1);
 
-  if (type && VALID_TYPES.includes(type))           query = query.eq('type', type);
+  if (type && VALID_TYPES.includes(type))              query = query.eq('type', type);
   if (category && VALID_CATEGORIES.includes(category)) query = query.eq('category', category);
-  if (month && /^\d{4}-\d{2}$/.test(month))         query = query.like('date', `${month}-%`);
-  if (year && /^\d{4}$/.test(year))                 query = query.like('date', `${year}-%`);
+  if (month && /^\d{4}-\d{2}$/.test(month)) {
+    query = query
+      .gte('date', `${month}-01`)
+      .lte('date', `${month}-31`);
+  }
+  if (year && /^\d{4}$/.test(year)) {
+    query = query
+      .gte('date', `${year}-01-01`)
+      .lte('date', `${year}-12-31`);
+  }
 
   const { data, error, count } = await query;
 

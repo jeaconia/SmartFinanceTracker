@@ -113,7 +113,12 @@ async function updateProfile(req, res) {
   const { data, error } = await supabase
     .from('users')
     .upsert(
-      { id: userId, ...updates, updated_at: new Date().toISOString() },
+      { 
+        id: userId, 
+        email: req.user.email,  // ← tambahkan ini
+        ...updates, 
+        updated_at: new Date().toISOString() 
+      },
       { onConflict: 'id' }
     )
     .select()
