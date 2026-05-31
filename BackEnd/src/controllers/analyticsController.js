@@ -85,9 +85,7 @@ async function getMonthlyChart(req, res) {
     .from('monthly_analytics')
     .select('month, total_expense, monthly_income')
     .eq('user_id', userId)
-    .gte('date', `${month}-01`)
-    .lte('date', `${month}-31`)
-    .order('month', { ascending: true });
+    .like('month', `${year}-%`)
 
   if (error) {
     console.error('[getMonthlyChart]', error);

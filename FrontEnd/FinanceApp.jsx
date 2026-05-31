@@ -381,8 +381,9 @@ function Budgeting() {
           <div style={{ background:"#2D4A1E", borderRadius:18, padding:16, color:"white", marginBottom:12 }}>
             <div style={{ fontWeight:800, fontSize:14, marginBottom:10 }}>🤖 Rekomendasi AI</div>
             {recs===null && <div style={{ fontSize:12, opacity:0.7 }}>Memuat...</div>}
-            {recs?.recommendations?.length===0 && <div style={{ fontSize:12, opacity:0.7 }}>Belum ada rekomendasi</div>}
-            {recs?.recommendations?.map((r,i) => (
+            {recs!==null && !Array.isArray(recs?.recommendations) && <div style={{ fontSize:12, opacity:0.7 }}>AI service belum tersedia</div>}
+            {Array.isArray(recs?.recommendations) && recs.recommendations.length===0 && <div style={{ fontSize:12, opacity:0.7 }}>Belum ada rekomendasi</div>}
+            {Array.isArray(recs?.recommendations) && recs.recommendations.map((r,i) => (
               <div key={i} style={{ background:"rgba(255,255,255,0.12)", borderRadius:10, padding:10, marginBottom:8 }}>
                 <div style={{ fontWeight:700, fontSize:12 }}>{CAT_ICONS[r.category]||"💡"} {r.category}</div>
                 <div style={{ fontSize:11, opacity:0.85, marginTop:3 }}>Limit rekomendasi: <b>{fmtS(r.recommended_limit)}</b></div>

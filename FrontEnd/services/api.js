@@ -64,17 +64,29 @@ export async function getCategoryChart(month) {
 
 // AI
 export async function getSpendingLabel(month) {
-  const q = month ? `?month=${month}` : "";
-  const { data } = await apiFetch(`/api/ai/spending-label${q}`);
-  return { label: data.spending_label ?? data.label ?? "—", confidence: data.label_confidence ?? null, traits: data.label_traits ?? [] };
+  try {
+    const q = month ? `?month=${month}` : "";
+    const { data } = await apiFetch(`/api/ai/spending-label${q}`);
+    return { label: data.spending_label ?? data.label ?? "—", confidence: data.label_confidence ?? null, traits: data.label_traits ?? [] };
+  } catch {
+    return { label: "—", confidence: null, traits: [] };
+  }
 }
 export async function getPrediction() {
-  const { data } = await apiFetch("/api/ai/predict");
-  return { prediksi: data.predicted_total_expense ?? data.prediction ?? 0, context: data.context ?? null };
+  try {
+    const { data } = await apiFetch("/api/ai/predict");
+    return { prediksi: data.predicted_total_expense ?? data.prediction ?? 0, context: data.context ?? null };
+  } catch {
+    return { prediksi: 0, context: null };
+  }
 }
 export async function getBudgetRecommendations() {
-  const { data } = await apiFetch("/api/ai/budget-recommendation");
-  return { recommendations: data.recommendations ?? [], basedOnCity: data.based_on_city, basedOnUmr: data.based_on_umr };
+  try {
+    const { data } = await apiFetch("/api/ai/budget-recommendation");
+    return { recommendations: data.recommendations ?? [], basedOnCity: data.based_on_city, basedOnUmr: data.based_on_umr };
+  } catch {
+    return { recommendations: [], basedOnCity: null, basedOnUmr: null };
+  }
 }
 export async function getAiResults(month) {
   const q = month ? `?month=${month}` : "";
