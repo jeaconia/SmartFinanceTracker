@@ -10,9 +10,13 @@
 import { CAT_ICONS, CAT_COLORS } from "../constants/categories.js";
 import { timeAgo, monthLabel }    from "../utils/format.js";
 
-export const API_BASE_URL =
-  (typeof import.meta !== "undefined" && import.meta.env?.VITE_API_URL) ||
-  "http://localhost:3001";
+/**
+ * API_BASE_URL:
+ * - Jika VITE_API_URL di-set di .env → pakai nilai tersebut (untuk production/staging)
+ * - Jika tidak di-set → pakai string kosong "" agar request /api/* diteruskan
+ *   melalui Vite dev proxy ke backend (menghindari masalah CORS saat development)
+ */
+export const API_BASE_URL = import.meta.env?.VITE_API_URL ?? "";
 
 let _token = null;
 export const setAuthToken   = (t) => { _token = t; };
