@@ -216,15 +216,28 @@ function Dashboard({ profile, notifs, onBell }) {
 
 function Grafik() {
   const [trendMonths, setTrendMonths] = useState(6);
-  const [chart, setChart]     = useState([]);
-  const [pieSpend, setPieSpend] = useState([]);
-  const [recent, setRecent]   = useState([]);
-  const [pred, setPred]       = useState(null);
+  const [chart, setChart]       = useState([]);
+  const [pieExpense, setPieExpense] = useState([]);
+  const [pieIncome, setPieIncome]   = useState([]);
+  const [recent, setRecent]     = useState([]);
+  const [pred, setPred]         = useState(null);
   const month = currentMonthStr();
 
   useEffect(() => { API.getTrendChart(trendMonths).then(setChart).catch(() => {}); }, [trendMonths]);
   useEffect(() => {
-    API.getCategoryChart(month).then(setPieSpend).catch(() => {});
+    // Pengeluaran per kategori
+    API.getCategoryChart(month).then(setPieExpense).catch(() => {});
+    // Pemasukan per kategori — fetch dari transactions langsung
+    API.listTransactions({ type: 'income', month })
+      .then(r => {
+        const totals = {};
+        let grand = 0;
+        for (const t of r.data ?? []) {
+          totals['Pemasukan'] = (totals['Pemasukan'] ?? 0) + t.amount;
+          grand += t.amount;
+        }
+        setPieIncome(grand > 0 ? [{ name: 'Pemasukan', value: 100, total: grand, color: '#4A7A32' }] : []);
+      }).catch(() => {});
     API.listTransactions({}).then(r => setRecent(r.data?.slice(0,6)||[])).catch(() => {});
     API.getPrediction().then(setPred).catch(() => {});
   }, []);
@@ -240,8 +253,8 @@ function Grafik() {
       <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 220px", gap:12, marginBottom:12 }}>
         <div style={{ background:"white", borderRadius:18, padding:16 }}>
           <div style={{ fontWeight:700, fontSize:13, color:"#1a1a1a", marginBottom:10 }}>🔴 Pengeluaran per Kategori</div>
-          <div style={{ display:"flex", justifyContent:"center", marginBottom:10 }}><PieChart data={pieSpend} size={110} /></div>
-          {pieSpend.map(d => (
+          <div style={{ display:"flex", justifyContent:"center", marginBottom:10 }}><PieChart data={pieExpense} size={110} /></div>
+          {pieExpense.map(d => (
             <div key={d.name} style={{ display:"flex", justifyContent:"space-between", fontSize:11, padding:"2px 0", borderBottom:"1px solid #fafafa" }}>
               <span style={{ display:"flex", alignItems:"center", gap:5 }}><span style={{ width:7, height:7, borderRadius:2, background:d.color, display:"inline-block" }} />{CAT_ICONS[d.name]} {d.name}</span>
               <span style={{ color:"#aaa" }}>{d.value}% · {fmtS(d.total)}</span>
@@ -250,8 +263,8 @@ function Grafik() {
         </div>
         <div style={{ background:"white", borderRadius:18, padding:16 }}>
           <div style={{ fontWeight:700, fontSize:13, color:"#1a1a1a", marginBottom:10 }}>💚 Pemasukan</div>
-          <div style={{ display:"flex", justifyContent:"center", marginBottom:10 }}><PieChart data={pieSpend.map(d=>({...d,color:d.color+"99"}))} size={110} /></div>
-          {pieSpend.map(d => (
+          <div style={{ display:"flex", justifyContent:"center", marginBottom:10 }}><PieChart data={pieIncome.map(d=>({...d,color:d.color+"99"}))} size={110} /></div>
+          {pieIncome.map(d => (
             <div key={d.name} style={{ display:"flex", justifyContent:"space-between", fontSize:11, padding:"2px 0", borderBottom:"1px solid #fafafa" }}>
               <span style={{ display:"flex", alignItems:"center", gap:5 }}><span style={{ width:7, height:7, borderRadius:2, background:d.color+"99", display:"inline-block" }} />{d.name}</span>
               <span style={{ color:"#aaa" }}>{d.value}%</span>

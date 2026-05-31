@@ -37,23 +37,54 @@ async function listBudgets(req, res) {
   const userId = req.user.id;
   const { month } = req.query;
 
-  // Query the budget_status view (includes all budget fields + used/remaining/overbudget)
-  let query = supabase
-    .from('budget_status')
+  // Ambil budgets
+  let budgetQuery = supabase
+    .from('budgets')
     .select('*')
     .eq('user_id', userId)
     .order('category', { ascending: true });
 
   if (month && /^\d{4}-\d{2}$/.test(month)) {
-    query = query.eq('month', month);
+    budgetQuery = budgetQuery.eq('month', month);
   }
 
-  const { data, error } = await query;
-
-  if (error) {
-    console.error('[listBudgets]', error);
-    return res.status(500).json({ success: false, error: error.message });
+  const { data: budgets, error: budgetError } = await budgetQuery;
+  if (budgetError) {
+    console.error('[listBudgets]', budgetError);
+    return res.status(500).json({ success: false, error: budgetError.message });
   }
+
+  if (!budgets || budgets.length === 0) {
+    return res.json({ success: true, data: [] });
+  }
+
+  // Hitung pengeluaran per kategori dari transactions langsung
+  const targetMonth = month || budgets[0].month;
+  const { data: txRows, error: txError } = await supabase
+    .from('transactions')
+    .select('category, amount')
+    .eq('user_id', userId)
+    .eq('type', 'expense')
+    .gte('date', `${targetMonth}-01`)
+    .lte('date', `${targetMonth}-31`);
+
+  if (txError) {
+    console.error('[listBudgets tx]', txError);
+    return res.status(500).json({ success: false, error: txError.message });
+  }
+
+  // Aggregate pengeluaran per kategori
+  const usedMap = {};
+  for (const tx of txRows ?? []) {
+    usedMap[tx.category] = (usedMap[tx.category] ?? 0) + tx.amount;
+  }
+
+  // Gabungkan budget + used
+  const data = budgets.map(b => ({
+    ...b,
+    used: usedMap[b.category] ?? 0,
+    overbudget: (usedMap[b.category] ?? 0) > b.limit_amount,
+  }));
 
   return res.json({ success: true, data });
 }

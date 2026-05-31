@@ -34,39 +34,42 @@ async function getSummary(req, res) {
     return res.status(400).json({ success: false, error: 'month must be in YYYY-MM format' });
   }
 
-  const { data, error } = await supabase
+  // Hitung langsung dari transactions agar selalu real-time
+  const { data: txRows, error: txError } = await supabase
+    .from('transactions')
+    .select('type, amount')
+    .eq('user_id', userId)
+    .gte('date', `${month}-01`)
+    .lte('date', `${month}-31`);
+
+  if (txError) {
+    console.error('[getSummary]', txError);
+    return res.status(500).json({ success: false, error: txError.message });
+  }
+
+  const monthly_income = (txRows ?? [])
+    .filter(r => r.type === 'income')
+    .reduce((s, r) => s + r.amount, 0);
+  const total_expense = (txRows ?? [])
+    .filter(r => r.type === 'expense')
+    .reduce((s, r) => s + r.amount, 0);
+
+  // Ambil growth rate dari monthly_analytics jika ada (opsional)
+  const { data: analyticsRow } = await supabase
     .from('monthly_analytics')
-    .select(
-      'monthly_income, total_expense, transaction_count, avg_transaction_value, ' +
-      'spending_growth_rate, category_ratio, last_month_expense, avg_3month_expense'
-    )
+    .select('spending_growth_rate')
     .eq('user_id', userId)
     .eq('month', month)
     .maybeSingle();
 
-  if (error) {
-    console.error('[getSummary]', error);
-    return res.status(500).json({ success: false, error: error.message });
-  }
-
-  // Return zeroed-out shape even when no analytics row exists yet for the month
-  const row = data ?? {
-    monthly_income: 0,
-    total_expense: 0,
-    transaction_count: 0,
-    avg_transaction_value: 0,
-    spending_growth_rate: null,
-    category_ratio: null,
-    last_month_expense: null,
-    avg_3month_expense: null,
-  };
-
   return res.json({
     success: true,
     data: {
-      ...row,
       month,
-      net: (row.monthly_income ?? 0) - (row.total_expense ?? 0),
+      monthly_income,
+      total_expense,
+      net: monthly_income - total_expense,
+      spending_growth_rate: analyticsRow?.spending_growth_rate ?? null,
     },
   });
 }
