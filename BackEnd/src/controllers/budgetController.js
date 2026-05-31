@@ -2,6 +2,12 @@ const supabase = require('../config/supabase');
 
 const VALID_CATEGORIES = ['Belanja', 'Kesehatan', 'Hiburan', 'Sosial', 'Hewan Peliharaan'];
 
+function monthEndDate(month) {
+  const [year, mo] = month.split('-').map(Number);
+  const lastDay = new Date(year, mo, 0).getDate();
+  return `${month}-${String(lastDay).padStart(2, '0')}`;
+}
+
 // ── POST /api/budgets ─────────────────────────────────────────────────────────
 async function createBudget(req, res) {
   const userId = req.user.id;
@@ -66,7 +72,7 @@ async function listBudgets(req, res) {
     .eq('user_id', userId)
     .eq('type', 'expense')
     .gte('date', `${targetMonth}-01`)
-    .lte('date', `${targetMonth}-31`);
+    .lte('date', monthEndDate(targetMonth));
 
   if (txError) {
     console.error('[listBudgets tx]', txError);

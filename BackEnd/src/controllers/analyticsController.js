@@ -25,6 +25,13 @@ function currentMonth() {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 }
 
+/** Last day of month as YYYY-MM-DD */
+function monthEndDate(month) {
+  const [year, mo] = month.split('-').map(Number);
+  const lastDay = new Date(year, mo, 0).getDate();
+  return `${month}-${String(lastDay).padStart(2, '0')}`;
+}
+
 // ─── GET /api/analytics/summary?month=YYYY-MM ────────────────────────────────
 async function getSummary(req, res) {
   const userId = req.user.id;
@@ -40,7 +47,7 @@ async function getSummary(req, res) {
     .select('type, amount')
     .eq('user_id', userId)
     .gte('date', `${month}-01`)
-    .lte('date', `${month}-31`);
+    .lte('date', monthEndDate(month));
 
   if (txError) {
     console.error('[getSummary]', txError);
@@ -97,10 +104,18 @@ async function getMonthlyChart(req, res) {
 
   // Build a full 12-month array; pad missing months with zeros
   const rowMap = new Map((data ?? []).map((r) => [r.month, r]));
-  const months = Array.from({ length: 12 }, (_, i) => {
-    const mo = String(i + 1).padStart(2, '0');
-    const key = `${year}-${mo}`;
-    const row = rowMap.get(key);
+  const monthKeys = Array.from({ length: 12 }, (_, i) => `${year}-${String(i + 1).padStart(2, '0')}`);
+
+  let transactionSummary;
+  try {
+    transactionSummary = await getTransactionMonthSummary(userId, monthKeys);
+  } catch (txError) {
+    console.error('[getMonthlyChart] transaction fallback failed', txError);
+    transactionSummary = new Map();
+  }
+
+  const months = monthKeys.map((key) => {
+    const row = rowMap.get(key) ?? transactionSummary.get(key);
     const income = row?.monthly_income ?? 0;
     const expense = row?.total_expense ?? 0;
     return {
@@ -118,20 +133,25 @@ async function getMonthlyChart(req, res) {
 async function getCategoryChart(req, res) {
   const userId = req.user.id;
   const month = req.query.month || currentMonth();
+  const type = (req.query.type || 'expense').toLowerCase();
 
   if (!isValidMonth(month)) {
     return res.status(400).json({ success: false, error: 'month must be in YYYY-MM format' });
   }
 
-  // Pull all expense transactions for the month and aggregate in JS
+  if (!['expense', 'income'].includes(type)) {
+    return res.status(400).json({ success: false, error: 'type must be either expense or income' });
+  }
+
+  // Pull all matching transactions for the month and aggregate in JS
   // (Supabase PostgREST doesn't support GROUP BY natively)
   const { data, error } = await supabase
     .from('transactions')
     .select('category, amount')
     .eq('user_id', userId)
-    .eq('type', 'expense')
+    .eq('type', type)
     .gte('date', `${month}-01`)
-    .lte('date', `${month}-31`);
+    .lte('date', monthEndDate(month));
 
   if (error) {
     console.error('[getCategoryChart]', error);
@@ -158,6 +178,39 @@ async function getCategoryChart(req, res) {
   return res.json({ success: true, data: categories });
 }
 
+async function getTransactionMonthSummary(userId, monthList) {
+  // Query all transactions between the first and last requested month.
+  const from = `${monthList[0]}-01`;
+  const to = monthEndDate(monthList[monthList.length - 1]);
+
+  const { data, error } = await supabase
+    .from('transactions')
+    .select('date, amount, type')
+    .eq('user_id', userId)
+    .gte('date', from)
+    .lte('date', to);
+
+  if (error) {
+    throw error;
+  }
+
+  const summary = new Map();
+  for (const month of monthList) {
+    summary.set(month, { monthly_income: 0, total_expense: 0 });
+  }
+
+  for (const tx of data ?? []) {
+    const txMonth = tx.date?.substring(0, 7);
+    if (!summary.has(txMonth)) continue;
+
+    const row = summary.get(txMonth);
+    if (tx.type === 'income') row.monthly_income += tx.amount;
+    if (tx.type === 'expense') row.total_expense += tx.amount;
+  }
+
+  return summary;
+}
+
 // ─── GET /api/analytics/chart/trend?months=6 ─────────────────────────────────
 async function getTrendChart(req, res) {
   const userId = req.user.id;
@@ -181,14 +234,23 @@ async function getTrendChart(req, res) {
     return res.status(500).json({ success: false, error: error.message });
   }
 
-  // Pad missing months with zeros so the chart always has N data points
-  const rowMap = new Map((data ?? []).map((r) => [r.month, r]));
+  const analyticsMap = new Map((data ?? []).map((r) => [r.month, r]));
+  let transactionSummary;
+
+  try {
+    transactionSummary = await getTransactionMonthSummary(userId, monthList);
+  } catch (txError) {
+    console.error('[getTrendChart] transaction fallback failed', txError);
+    transactionSummary = new Map();
+  }
+
   const trend = monthList.map((m) => {
-    const row = rowMap.get(m);
+    const row = analyticsMap.get(m);
+    const fallback = transactionSummary.get(m);
     return {
       month: m,
-      total_expense: row?.total_expense ?? 0,
-      monthly_income: row?.monthly_income ?? 0,
+      total_expense: row?.total_expense ?? fallback?.total_expense ?? 0,
+      monthly_income: row?.monthly_income ?? fallback?.monthly_income ?? 0,
     };
   });
 

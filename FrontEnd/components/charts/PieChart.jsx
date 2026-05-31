@@ -1,5 +1,11 @@
 function PieChart({ data, size = 100 }) {
-  if (!data?.length) return null;
+  if (!data?.length) {
+    return (
+      <div style={{ width: size, height: size, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#999', fontSize: 12, textAlign: 'center' }}>
+        Belum ada data
+      </div>
+    );
+  }
 
   const total = data.reduce((s, d) => s + (d.value || 0), 0) || 1;
   let angle = -90;

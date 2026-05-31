@@ -9,6 +9,12 @@ function monthFromDate(dateStr) {
   return dateStr.substring(0, 7);
 }
 
+function monthEndDate(month) {
+  const [year, mo] = month.split('-').map(Number);
+  const lastDay = new Date(year, mo, 0).getDate();
+  return `${month}-${String(lastDay).padStart(2, '0')}`;
+}
+
 // ── POST /api/transactions ────────────────────────────────────────────────────
 async function createTransaction(req, res) {
   const { type, amount, category, description, date, is_recurring, recurring_id } = req.body;
@@ -41,8 +47,11 @@ async function createTransaction(req, res) {
     description: description || null,
     is_recurring: is_recurring || false,
     recurring_id: recurring_id || null,
-    category: type === 'income' ? null : category,
   };
+
+  if (type === 'expense') {
+    payload.category = category;
+  }
 
   const { data, error } = await supabase
     .from('transactions')
@@ -81,7 +90,7 @@ async function listTransactions(req, res) {
   if (month && /^\d{4}-\d{2}$/.test(month)) {
     query = query
       .gte('date', `${month}-01`)
-      .lte('date', `${month}-31`);
+      .lte('date', monthEndDate(month));
   }
   if (year && /^\d{4}$/.test(year)) {
     query = query

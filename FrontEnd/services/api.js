@@ -62,6 +62,12 @@ export async function getCategoryChart(month) {
   return data.map(d => ({ name: d.category, value: d.percentage, total: d.total, color: CAT_COLORS[d.category] || "#8BBB6A" }));
 }
 
+export async function getIncomeCategoryChart(month) {
+  const q = month ? `?month=${month}&type=income` : "?type=income";
+  const { data } = await apiFetch(`/api/analytics/chart/category${q}`);
+  return data.map(d => ({ name: d.category, value: d.percentage, total: d.total, color: CAT_COLORS[d.category] || "#8BBB6A" }));
+}
+
 // AI
 export async function getSpendingLabel(month) {
   try {
