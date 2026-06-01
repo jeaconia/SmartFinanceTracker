@@ -2,7 +2,7 @@ function PieChart({ data, size = 100 }) {
   if (!data?.length) {
     return (
       <div style={{ width: size, height: size, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#999', fontSize: 12, textAlign: 'center' }}>
-        Belum ada data
+        No data
       </div>
     );
   }

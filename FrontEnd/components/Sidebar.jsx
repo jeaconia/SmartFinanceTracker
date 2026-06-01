@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { T } from "../constants/translations.js";
+import MoniWhite from "../assets/Moni Logo white.png";
 
 const IconDashboard = ({ active }) => (
   <svg width="22" height="23" viewBox="0 0 38 39" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -40,11 +42,11 @@ const IconSettings = ({ active }) => (
   </svg>
 );
 
-const NAVS = [
-  { id: "dashboard", label: "Dashboard", Icon: IconDashboard },
-  { id: "grafik",    label: "Grafik",    Icon: IconGrafik    },
-  { id: "budgeting", label: "Budgeting", Icon: IconBudget    },
-  { id: "catatan",   label: "Catatan",   Icon: IconCatatan   },
+const NAVS = (t) => [
+  { id: "dashboard", label: t.dashboard,  Icon: IconDashboard },
+  { id: "grafik",    label: t.charts,     Icon: IconGrafik    },
+  { id: "budgeting", label: t.budgeting,   Icon: IconBudget    },
+  { id: "catatan",   label: t.records,    Icon: IconCatatan   },
 ];
 
 function getInitials(name) {
@@ -52,105 +54,74 @@ function getInitials(name) {
   return name.trim().split(/\s+/).map(w => w[0].toUpperCase()).slice(0, 2).join("");
 }
 
-function ProfilePopup({ profile, onEdit, onLogout, darkMode }) {
-  const bg  = darkMode ? "#1e2f14" : "white";
-  const txt = darkMode ? "#e8f5e0" : "#1a1a1a";
-  const sub = darkMode ? "#8BBB6A" : "#888";
-  const bdr = darkMode ? "#3a5a28" : "#efefef";
+function ProfilePopup({ profile, onEdit, onLogout, darkMode, lang = "en" }) {
+  const t = T[lang] || T.en;
+  const popupClass = darkMode ? "sidebar-popup dark" : "sidebar-popup";
 
   return (
-    <div style={{
-      position: "absolute", left: 68, bottom: 0,
-      background: bg, borderRadius: 14, padding: "14px 16px",
-      boxShadow: "0 8px 32px rgba(0,0,0,0.2)", minWidth: 210,
-      border: `1.5px solid ${bdr}`, zIndex: 200,
-      fontFamily: "'Poppins', sans-serif",
-    }}>
-      <div style={{ position:"absolute", left:-7, bottom:18, width:12, height:12, background:bg, border:`1.5px solid ${bdr}`, borderRight:"none", borderTop:"none", transform:"rotate(45deg)" }} />
-      <div style={{ fontWeight:700, fontSize:14, color:txt, marginBottom:2 }}>{profile?.name ?? "—"}</div>
-      <div style={{ fontSize:11, color:sub, marginBottom:10 }}>{profile?.email ?? "—"}</div>
+    <div className={popupClass}>
+      <div className="sidebar-popup-arrow" />
+      <div className="sidebar-popup-title">{profile?.name ?? "—"}</div>
+      <div className="sidebar-popup-meta">{profile?.email ?? "—"}</div>
       {(profile?.city || profile?.province) && (
-        <div style={{ fontSize:11, color:sub, marginBottom:4 }}>📍 {[profile.city, profile.province].filter(Boolean).join(", ")}</div>
+        <div className="sidebar-popup-meta">📍 {[profile.city, profile.province].filter(Boolean).join(", ")}</div>
       )}
       {profile?.umr_value > 0 && (
-        <div style={{ fontSize:11, color:sub, marginBottom:10 }}>💰 UMR: Rp {profile.umr_value.toLocaleString("id-ID")}</div>
+        <div className="sidebar-popup-meta">💰 {t.umrLabel}: Rp {profile.umr_value.toLocaleString("id-ID")}</div>
       )}
-      <div style={{ borderTop:`1px solid ${bdr}`, paddingTop:8, display:"flex", flexDirection:"column", gap:2 }}>
-        <button onClick={onEdit} style={{ width:"100%", textAlign:"left", padding:"7px 8px", borderRadius:8, border:"none", background:"transparent", cursor:"pointer", fontSize:12, color:"#4A7A32", fontWeight:600, fontFamily:"inherit" }}
-          onMouseEnter={e=>e.currentTarget.style.background="rgba(74,122,50,0.1)"}
-          onMouseLeave={e=>e.currentTarget.style.background="transparent"}>✏️ Edit Profil</button>
-        <button onClick={onLogout} style={{ width:"100%", textAlign:"left", padding:"7px 8px", borderRadius:8, border:"none", background:"transparent", cursor:"pointer", fontSize:12, color:"#C0392B", fontWeight:600, fontFamily:"inherit" }}
-          onMouseEnter={e=>e.currentTarget.style.background="rgba(192,57,43,0.08)"}
-          onMouseLeave={e=>e.currentTarget.style.background="transparent"}>↩ Keluar</button>
+      <div className="sidebar-popup-row">
+        <button className="sidebar-popup-button edit" onClick={onEdit}>✏️ {t.editProfile}</button>
+        <button className="sidebar-popup-button logout" onClick={onLogout}>↩ {t.logout}</button>
       </div>
     </div>
   );
 }
 
-// Logo Moni SVG (disederhanakan agar tidak terlalu berat)
-const MoniLogo = () => (
-  <svg width="30" height="22" viewBox="0 0 699 488" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M613.491 83.5835C614.037 83.8489 614.635 83.9869 615.242 83.9869H655.149C658.476 83.9869 660.349 87.8126 658.308 90.4404L537.161 246.426C536.616 247.127 536.32 247.991 536.32 248.879V475.709C536.32 477.918 534.529 479.709 532.32 479.709H442.32C440.111 479.709 438.32 477.918 438.32 475.709V385.362C438.32 381.552 433.498 379.9 431.161 382.909L386.754 440.152L375.213 475.213C374.681 476.866 373.143 477.987 371.406 477.987H359.713C358.24 477.987 356.885 477.177 356.189 475.878L229.845 240.387C228.336 237.575 224.304 237.575 222.795 240.387L96.4516 475.878C95.7549 477.177 94.4006 477.987 92.9269 477.987H4.00556C0.981521 477.987 -0.948857 474.761 0.480811 472.096L176.189 144.596C176.885 143.297 178.24 142.487 179.713 142.487H272.927C274.401 142.487 275.755 143.297 276.452 144.596L372.332 323.305C373.7 325.856 377.24 326.154 379.016 323.868L438.195 247.67C438.276 247.565 438.32 247.437 438.32 247.304V247.126C438.738 246.709 439.068 246.547 565.32 83.9869L576.828 69.2587C577.99 67.7715 580.033 67.2989 581.73 68.1249L613.491 83.5835Z" fill="white" opacity="0.9"/>
-    <path d="M674.651 148.825C674.218 151.873 670.648 153.31 668.224 151.411L646.351 134.272C644.607 132.906 642.084 133.217 640.725 134.967L432.307 403.323L378.096 473.133C376.32 475.417 372.782 475.117 371.414 472.568L246.846 240.386C245.337 237.574 241.305 237.574 239.796 240.386L113.452 475.877C112.756 477.176 111.401 477.986 109.928 477.986H21.0063C17.9823 477.986 16.0519 474.76 17.4815 472.095L193.189 144.595C193.886 143.296 195.24 142.486 196.714 142.486H289.928C291.401 142.486 292.756 143.296 293.452 144.595L389.333 323.305C390.701 325.855 394.241 326.153 396.016 323.867L579.822 87.2029C581.173 85.4635 580.864 82.9592 579.13 81.6008L561.485 67.7748C559.062 65.8757 559.603 62.0649 562.459 60.9154L688.26 10.295C691.116 9.14556 694.146 11.5195 693.713 14.5682L674.651 148.825Z" fill="white" opacity="0.7"/>
-  </svg>
-);
+// Use white PNG logo from assets
 
-function Sidebar({ active, onChange, profile, onLogout, darkMode }) {
+function Sidebar({ active, onChange, profile, onLogout, darkMode, lang = "en" }) {
+  const t = T[lang] || T.en;
   const [showProfile, setShowProfile] = useState(false);
 
   const handleEdit   = () => { setShowProfile(false); onChange("settings"); };
   const handleLogout = () => { setShowProfile(false); onLogout(); };
 
   return (
-    <div style={{
-      width:60, background:"#2D4A1E", display:"flex", flexDirection:"column",
-      alignItems:"center", padding:"14px 0", gap:2,
-      position:"fixed", left:0, top:0, bottom:0, zIndex:100,
-    }}>
+    <div className="sidebar-root">
       {/* Logo Moni */}
-      <div style={{ marginBottom:14, display:"flex", alignItems:"center", justifyContent:"center" }}>
-        <MoniLogo />
+      <div className="sidebar-logo">
+        <img src={MoniWhite} alt="Moni logo" className="sidebar-logo-img" />
       </div>
 
       {/* Nav */}
-      {NAVS.map(({ id, label, Icon }) => (
-        <button key={id} title={label} onClick={() => onChange(id)} style={{
-          width:44, height:44, borderRadius:12, border:"none", cursor:"pointer",
-          transition:"all .2s",
-          background: active===id ? "rgba(255,255,255,0.18)" : "transparent",
-          display:"flex", alignItems:"center", justifyContent:"center",
-        }}>
+      {NAVS(t).map(({ id, label, Icon }) => (
+        <button
+          key={id}
+          title={label}
+          onClick={() => onChange(id)}
+          className={"sidebar-nav-button" + (active===id ? " active" : "")}
+        >
           <Icon active={active===id} />
         </button>
       ))}
 
-      <div style={{ flex:1 }} />
+      <div className="sidebar-spacer" />
 
       {/* Settings */}
-      <button title="Pengaturan" onClick={() => onChange("settings")} style={{
-        width:44, height:44, borderRadius:12, border:"none", cursor:"pointer",
-        transition:"all .2s",
-        background: active==="settings" ? "rgba(255,255,255,0.18)" : "transparent",
-        display:"flex", alignItems:"center", justifyContent:"center",
-        marginBottom:6,
-      }}>
+      <button
+        title={t.settings}
+        onClick={() => onChange("settings")}
+        className={"sidebar-action-button" + (active==="settings" ? " active" : "")}
+      >
         <IconSettings active={active==="settings"} />
       </button>
 
       {/* Avatar */}
-      <div style={{ position:"relative", marginBottom:8 }}>
+      <div className="sidebar-avatar-wrapper">
         <button
-          title={profile?.name ?? "Profil"}
+          title={profile?.name ?? t.profile}
           onClick={() => setShowProfile(v => !v)}
-          style={{
-            width:36, height:36, borderRadius:"50%",
-            background: showProfile ? "rgba(255,255,255,0.38)" : "rgba(255,255,255,0.22)",
-            border: showProfile ? "2px solid rgba(255,255,255,0.7)" : "2px solid transparent",
-            display:"flex", alignItems:"center", justifyContent:"center",
-            fontSize:12, color:"white", fontWeight:700,
-            cursor:"pointer", transition:"all .2s",
-            fontFamily:"'Poppins',sans-serif",
-          }}
+          className={"sidebar-avatar-button" + (showProfile ? " active" : "")}
         >
           {getInitials(profile?.name)}
         </button>
@@ -161,6 +132,7 @@ function Sidebar({ active, onChange, profile, onLogout, darkMode }) {
             onEdit={handleEdit}
             onLogout={handleLogout}
             darkMode={darkMode}
+            lang={lang}
           />
         )}
       </div>

@@ -1,8 +1,10 @@
 import { useState } from "react";
+import { T } from "../constants/translations.js";
 import { VALID_CATEGORIES, CAT_ICONS } from "../constants/categories.js";
 import { todayWIB } from "../utils/format.js";
 
-export default function TxModal({ onSave, onClose, defaultType = "expense" }) {
+export default function TxModal({ onSave, onClose, defaultType = "expense", lang = "en" }) {
+  const t = T[lang] || T.en;
   const [form, setForm] = useState({
     type:        defaultType,
     amount:      "",
@@ -27,56 +29,47 @@ export default function TxModal({ onSave, onClose, defaultType = "expense" }) {
   };
 
   return (
-    <div style={{
-      position: "fixed", inset: 0, background: "rgba(0,0,0,0.35)",
-      zIndex: 500, display: "flex", alignItems: "center", justifyContent: "center",
-    }}>
-      <div style={{ background: "white", borderRadius: 20, padding: 24, width: 360, boxShadow: "0 8px 32px rgba(0,0,0,0.15)" }}>
-        <div style={{ fontWeight: 800, fontSize: 16, color: "#2D4A1E", marginBottom: 16 }}>
-          Tambah Transaksi
-        </div>
+    <div className="tx-modal-backdrop">
+      <div className="tx-modal-card">
+        <div className="tx-modal-title">{t.txModalTitle}</div>
 
-        {/* Type toggle */}
-        <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
-          {["income", "expense"].map((t) => (
+        <div className="tx-modal-toggle-group">
+          {["income", "expense"].map((type) => (
             <button
-              key={t}
-              onClick={() => upd("type", t)}
-              style={{
-                flex: 1, padding: 8, borderRadius: 10, cursor: "pointer",
-                border: "2px solid", fontWeight: 700, fontSize: 13,
-                borderColor: form.type === t ? "#4A7A32" : "#e0e0e0",
-                background:  form.type === t ? "#4A7A32" : "white",
-                color:       form.type === t ? "white"   : "#888",
-              }}
+              key={type}
+              onClick={() => upd("type", type)}
+              className={`tx-modal-toggle-button${form.type === type ? " active" : ""}`}
             >
-              {t === "income" ? "💚 Pemasukan" : "🔴 Pengeluaran"}
+              {type === "income" ? t.transactionTypeIncome : t.transactionTypeExpense}
             </button>
           ))}
         </div>
 
         <input
-          type="number" placeholder="Jumlah (Rp)" value={form.amount}
+          type="number"
+          placeholder={t.amountPlaceholder}
+          value={form.amount}
           onChange={(e) => upd("amount", e.target.value)}
-          style={inputStyle}
+          className="tx-modal-input"
         />
         <input
-          type="date" value={form.date}
+          type="date"
+          value={form.date}
           onChange={(e) => upd("date", e.target.value)}
-          style={inputStyle}
+          className="tx-modal-input"
         />
         <input
-          placeholder="Deskripsi (opsional)" value={form.description}
+          placeholder={t.descriptionPlaceholder}
+          value={form.description}
           onChange={(e) => upd("description", e.target.value)}
-          style={inputStyle}
+          className="tx-modal-input"
         />
 
-        {/* Kategori — hanya expense */}
         {!isIncome && (
           <select
             value={form.category}
             onChange={(e) => upd("category", e.target.value)}
-            style={{ ...inputStyle, background: "white" }}
+            className="tx-modal-input"
           >
             {VALID_CATEGORIES.map((c) => (
               <option key={c} value={c}>{CAT_ICONS[c]} {c}</option>
@@ -84,27 +77,12 @@ export default function TxModal({ onSave, onClose, defaultType = "expense" }) {
           </select>
         )}
 
-        <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
-          <button
-            onClick={onClose}
-            style={{ flex: 1, padding: 10, borderRadius: 10, border: "1px solid #C8D4A0", background: "white", cursor: "pointer", fontWeight: 600, color: "#888" }}
-          >
-            Batal
-          </button>
-          <button
-            onClick={handleSave}
-            style={{ flex: 1, padding: 10, borderRadius: 10, border: "none", background: "#4A7A32", color: "white", cursor: "pointer", fontWeight: 700 }}
-          >
-            Simpan
-          </button>
+        <div className="tx-modal-actions">
+          <button className="tx-modal-button cancel" onClick={onClose}>{t.cancelBtn}</button>
+          <button className="tx-modal-button save" onClick={handleSave}>{t.saveBtn}</button>
         </div>
       </div>
     </div>
   );
 }
 
-const inputStyle = {
-  width: "100%", padding: "9px 12px", borderRadius: 10,
-  border: "1px solid #C8D4A0", fontSize: 14,
-  marginBottom: 10, boxSizing: "border-box", fontFamily: "inherit",
-};

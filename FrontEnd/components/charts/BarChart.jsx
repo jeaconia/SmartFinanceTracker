@@ -2,7 +2,7 @@ function BarChart({ data, h = 130 }) {
   if (!data?.length)
     return (
       <div style={{ height: h, display: "flex", alignItems: "center", justifyContent: "center", color: "#bbb", fontSize: 12 }}>
-        Belum ada data
+        No data
       </div>
     );
 
