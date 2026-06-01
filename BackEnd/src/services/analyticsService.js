@@ -85,6 +85,9 @@ async function upsertMonthlyAnalytics(userId, month) {
     }
 
     // ── 6. Upsert ────────────────────────────────────────────────────────────
+    const expense_to_income_ratio = monthly_income > 0
+      ? parseFloat((total_expense / monthly_income).toFixed(4))
+      : 0;
     const { error: upsertError } = await supabase
       .from('monthly_analytics')
       .upsert(
@@ -98,6 +101,7 @@ async function upsertMonthlyAnalytics(userId, month) {
           last_month_expense,
           avg_3month_expense,
           spending_growth_rate,
+          expense_to_income_ratio,
           category_ratio,
           calculated_at: new Date().toISOString(), // stored as UTC, display layer converts to WIB
         },

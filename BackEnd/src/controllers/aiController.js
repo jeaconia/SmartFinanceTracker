@@ -103,13 +103,17 @@ async function predictNextMonthExpense(req, res) {
     return res.status(502).json({ success: false, error: err.message });
   }
 
-  // Predictions are stored against NEXT month's row so they don't overwrite
-  // the current month's actuals.
+  // ── Extract bulan_ke:1 as predicted_total_expense ─────────────────────────
+  const predictions = result?.predictions ?? [];
+  const bulan1      = predictions.find((p) => p.bulan_ke === 1);
+  const predicted_total_expense = bulan1
+    ? parseFloat((bulan1.proporsi_terhadap_pendapatan * 100).toFixed(2))
+    : null;
+
+  // ── Persist to ai_results (fire-and-forget) ───────────────────────────────
   upsertAiResult(userId, nextMonth(), {
-    predicted_total_expense: result.predicted_total_expense ?? result.prediction ?? null,
-    // Persist any additional context fields the AI service may return
-    // (e.g. confidence_interval, model_version) under a generic jsonb column if present
-    ...(result.context ? { prediction_context: result.context } : {}),
+    predicted_total_expense,
+    prediction_context: predictions.length > 0 ? predictions : null,
   });
 
   return res.json({ success: true, data: result });
