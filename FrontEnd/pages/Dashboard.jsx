@@ -54,11 +54,11 @@ export default function Dashboard({ profile, notifs, onBell, theme, darkMode, la
 
       <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14, marginBottom:14 }}>
         <div style={{ background:"linear-gradient(135deg,#3A5C28 0%,#5a6b3a 100%)", borderRadius:18, padding:"18px 20px", color:"white" }}>
-          <div style={{ fontSize:12, opacity:0.8, marginBottom:4 }}>Sisa Budget · {sum.month}</div>
+          <div style={{ fontSize:12, opacity:0.8, marginBottom:4 }}>{t.sisaBudget} · {sum.month}</div>
           <div style={{ fontSize:30, fontWeight:900, letterSpacing:-1, color:netPositive?"white":"#FFB3B3" }}>{fmtS(sum.sisaBudget)}</div>
           {sum.growthRate !== null && (
             <div style={{ fontSize:11, opacity:0.75, marginBottom:8 }}>
-              {sum.growthRate > 0 ? "▲" : "▼"} {Math.abs(sum.growthRate)}% vs bulan lalu
+              {sum.growthRate > 0 ? "▲" : "▼"} {Math.abs(sum.growthRate)}% {t.fromLastMonth}
             </div>
           )}
           <div style={{ display:"flex", justifyContent:"space-between", marginTop:10, fontSize:11, opacity:0.85 }}>

@@ -34,11 +34,11 @@ export default function Budgeting({ theme, lang = "en" }) {
     <div style={{ padding:"20px 24px", animation:"fadeIn .3s ease" }}>
       <div style={{ fontWeight:800, fontSize:20, color: theme.txt, marginBottom:16 }}>{t.monthlyBudget} · {month}</div>
       {overBudgets.length > 0 && (
-        <div style={{ background:"#FDF0EE", border:"1.5px solid #F5C6BE", borderRadius:14, padding:"12px 16px", marginBottom:16, display:"flex", alignItems:"center", gap:10 }}>
+        <div className="overbudget-alert" style={{ borderRadius:14, padding:"12px 16px", marginBottom:16, display:"flex", alignItems:"center", gap:10 }}>
           <span style={{ fontSize:22 }}>⚠️</span>
           <div>
             <div style={{ fontWeight:700, color:"#C0392B", fontSize:13 }}>{t.overbudgetAlert}</div>
-            <div style={{ fontSize:12, color:"#888" }}>{overBudgets.map(b=>b.category).join(", ")} melebihi anggaran bulan ini</div>
+            <div style={{ fontSize:12, color:"#888" }}>{overBudgets.map(b=>b.category).join(", ")} {t.overBudgetMessage}</div>
           </div>
         </div>
       )}

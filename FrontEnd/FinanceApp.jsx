@@ -96,7 +96,7 @@ export default function App() {
   if (!session) return <AuthPage onAuth={handleAuth} lang={lang} />;
 
   return (
-    <div className="app-root" style={{ background: theme.bg }}>
+    <div className={"app-root" + (darkMode ? " dark" : "")} style={{ background: theme.bg }}>
       <Sidebar
         active={page}
         onChange={p => { setPage(p); setShowNotif(false); }}

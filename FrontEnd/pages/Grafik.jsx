@@ -70,7 +70,7 @@ export default function Grafik({ theme, lang = "en" }) {
               <span style={{ fontSize:16 }}>{t.type==="income"?"💼":CAT_ICONS[t.category]||"💸"}</span>
               <div style={{ flex:1, minWidth:0 }}>
                 <div style={{ fontSize:11, fontWeight:600, color: theme.txt, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{t.description||"—"}</div>
-                <div style={{ fontSize:10, color: theme.sub }}>{t.category || t.pemasukan} · {t.date}</div>
+                <div style={{ fontSize:10, color: theme.sub }}>{tx.category} · {t.date}</div>
               </div>
               <div style={{ fontSize:11, fontWeight:700, color:t.type==="income"?"#4CAF50":"#C0392B", whiteSpace:"nowrap" }}>{t.type==="income"?"+":"-"}{fmtS(t.amount)}</div>
             </div>
@@ -79,7 +79,7 @@ export default function Grafik({ theme, lang = "en" }) {
       </div>
       <div style={{ display:"grid", gridTemplateColumns:"1fr 220px", gap:12 }}>
         <div style={{ background: theme.card, borderRadius:18, padding:16 }}>
-          <div style={{ fontWeight:700, fontSize:13, color: theme.txt, marginBottom:6 }}>📈 Tren Keuangan</div>
+          <div style={{ fontWeight:700, fontSize:13, color: theme.txt, marginBottom:6 }}>{t.financialTrend}</div>
           <div style={{ display:"flex", gap:10, marginBottom:4 }}>
             {[ ["#4A7A32",t.pemasukan],["rgba(74,122,50,0.25)",t.pengeluaran] ].map(([c,l]) => (
               <span key={l} style={{ display:"flex", alignItems:"center", gap:4, fontSize:11, color: theme.sub }}><span style={{ width:8, height:8, borderRadius:2, background:c, display:"inline-block" }} />{l}</span>

@@ -827,3 +827,190 @@ input, select {
   background: #4A7A32;
   color: white;
 }
+
+/* ── Dark mode: CSS variable overrides ── */
+.dark {
+  --bg: #111c0b;
+  --card: #1a2a12;
+  --txt: #e8f5e0;
+  --sub: #8BBB6A;
+  --bdr: #2D4A1E;
+  --inp: #243318;
+  --card-secondary: #1e2f14;
+  --card-active: #243a18;
+}
+
+/* ── Dark: notification panel ── */
+.dark .notif-panel {
+  background: #1a2a12;
+  border-color: #2D4A1E;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+}
+
+.dark .notif-panel-header {
+  border-bottom-color: #2D4A1E;
+  color: #e8f5e0;
+}
+
+.dark .notif-item {
+  background: #1a2a12;
+  border-bottom-color: #2D4A1E;
+}
+
+.dark .notif-item.unread {
+  background: #1e3015;
+}
+
+.dark .notif-item-title {
+  color: #e8f5e0;
+}
+
+.dark .notif-item-text {
+  color: #8BBB6A;
+}
+
+.dark .notif-item-time {
+  color: #5a7a48;
+}
+
+.dark .notif-panel-empty {
+  color: #5a7a48;
+}
+
+/* ── Dark: transaction modal ── */
+.dark .tx-modal-card {
+  background: #1a2a12;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+}
+
+.dark .tx-modal-title {
+  color: #e8f5e0;
+}
+
+.dark .tx-modal-toggle-button {
+  border-color: #2D4A1E;
+  background: #243318;
+  color: #8BBB6A;
+}
+
+.dark .tx-modal-toggle-button.active {
+  border-color: #4A7A32;
+  background: #4A7A32;
+  color: white;
+}
+
+.dark .tx-modal-input {
+  background: #243318;
+  border-color: #2D4A1E;
+  color: #e8f5e0;
+}
+
+.dark .tx-modal-input::placeholder {
+  color: #5a7a48;
+}
+
+.dark .tx-modal-input option {
+  background: #243318;
+  color: #e8f5e0;
+}
+
+.dark .tx-modal-button.cancel {
+  border-color: #2D4A1E;
+  background: #243318;
+  color: #8BBB6A;
+}
+
+/* ── Dark: sidebar popup row border ── */
+.dark .sidebar-popup-row {
+  border-top-color: #2D4A1E;
+}
+
+.dark .sidebar-popup-button:hover {
+  background: rgba(255,255,255,0.06);
+}
+
+/* ── Dark: overbudget alert in Budgeting ── */
+/* ── Overbudget alert ── */
+.overbudget-alert {
+  background: #FDF0EE;
+  border: 1.5px solid #F5C6BE;
+}
+
+.dark .overbudget-alert {
+  background: #2a1212;
+  border-color: #5a2020;
+}
+
+/* ── Dark: page error ── */
+.dark .page-error {
+  background: #2a1212;
+  color: #f08080;
+}
+
+/* ── Dark: auth inputs (if shown in dark context) ── */
+.dark .auth-input {
+  background: #243318;
+  border-color: #2D4A1E;
+  color: #e8f5e0;
+}
+
+.dark .auth-input:focus {
+  border-color: #4A7A32;
+}
+
+.dark .auth-right {
+  background: #1a2a12;
+}
+
+.dark .auth-section-title {
+  color: #e8f5e0;
+}
+
+.dark .auth-section-subtitle {
+  color: #8BBB6A;
+}
+
+.dark .auth-field-label {
+  color: #8BBB6A;
+}
+
+.dark .auth-error {
+  background: #2a1212;
+  border-color: #5a2020;
+  color: #f08080;
+}
+
+.dark .auth-secondary-button {
+  background: #243318;
+  border-color: #2D4A1E;
+  color: #8BBB6A;
+}
+
+.dark .auth-info {
+  color: #5a7a48;
+}
+
+/* ── Dark: page inputs (select, month picker etc.) ── */
+.dark select option {
+  background: #243318;
+  color: #e8f5e0;
+}
+
+.dark input[type="month"],
+.dark input[type="date"] {
+  color-scheme: dark;
+}
+
+/* ── Dark: scrollbar ── */
+.dark ::-webkit-scrollbar-thumb {
+  background: #2D4A1E;
+}
+
+/* ── Dark: page-tab-button ── */
+.dark .page-tab-button.inactive {
+  color: #8BBB6A;
+}
+
+.dark .page-tab-button.inactive:hover {
+  background: rgba(255,255,255,0.05);
+}
