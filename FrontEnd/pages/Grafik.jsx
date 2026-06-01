@@ -65,14 +65,14 @@ export default function Grafik({ theme, lang = "en" }) {
         </div>
         <div style={{ background: theme.card, borderRadius:18, padding:16, border:`2px solid ${theme.bdr}` }}>
           <div style={{ fontWeight:700, fontSize:13, color: theme.txt, marginBottom:10 }}>{t.recent}</div>
-          {recent.map(t => (
-            <div key={t.id} style={{ display:"flex", alignItems:"center", gap:7, marginBottom:8 }}>
-              <span style={{ fontSize:16 }}>{t.type==="income"?"💼":CAT_ICONS[t.category]||"💸"}</span>
+          {recent.map(tx => (
+            <div key={tx.id} style={{ display:"flex", alignItems:"center", gap:7, marginBottom:8 }}>
+              <span style={{ fontSize:16 }}>{tx.type==="income"?"💼":CAT_ICONS[tx.category]||"💸"}</span>
               <div style={{ flex:1, minWidth:0 }}>
-                <div style={{ fontSize:11, fontWeight:600, color: theme.txt, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{t.description||"—"}</div>
-                <div style={{ fontSize:10, color: theme.sub }}>{tx.category} · {t.date}</div>
+                <div style={{ fontSize:11, fontWeight:600, color: theme.txt, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{tx.description||"—"}</div>
+                <div style={{ fontSize:10, color: theme.sub }}>{tx.category} · {tx.date}</div>
               </div>
-              <div style={{ fontSize:11, fontWeight:700, color:t.type==="income"?"#4CAF50":"#C0392B", whiteSpace:"nowrap" }}>{t.type==="income"?"+":"-"}{fmtS(t.amount)}</div>
+              <div style={{ fontSize:11, fontWeight:700, color:tx.type==="income"?"#4CAF50":"#C0392B", whiteSpace:"nowrap" }}>{tx.type==="income"?"+":"-"}{fmtS(tx.amount)}</div>
             </div>
           ))}
         </div>
