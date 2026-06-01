@@ -11,6 +11,69 @@ import { supabase } from "./services/supabase.js";
 import { VALID_CATEGORIES, CAT_ICONS, CAT_COLORS, VALID_FREQUENCIES } from "./constants/categories.js";
 import { fmt, fmtS, currentMonthStr } from "./utils/format.js";
 
+// ── Translations ──────────────────────────────────────────────────────────────
+const T = {
+  id: {
+    welcome: "Selamat datang,", loading: "Memuat...",
+    addTx: "+ Transaksi", noData: "Belum ada data",
+    sisaBudget: "Sisa Budget", pemasukan: "Pemasukan", pengeluaran: "Pengeluaran",
+    todayInsight: "Insight Hari Ini", aiLoading: "AI service belum tersedia",
+    monthlyAnalysis: "Analisis Keuangan Bulanan",
+    spendingLabel: "Label Pola Spending", basedOnCategory: "Berdasarkan kategori bulan ini",
+    grafikTitle: "Ringkasan Pengeluaranmu", expenseByCategory: "Pengeluaran per Kategori",
+    incomeByCategory: "Pemasukan per Kategori", recent: "Terbaru",
+    financialTrend: "Tren Keuangan", prediksi: "Prediksi Bulan Depan",
+    basedOnAI: "Berdasarkan AI", fromLastMonth: "dari bulan lalu",
+    budgetTitle: "Budgeting", monthlyBudget: "Anggaran Bulanan", addBudget: "+ Tambah",
+    overbudgetAlert: "Overbudget Alert!", exceedBudget: "melebihi anggaran bulan ini",
+    aiRecommendation: "Rekomendasi AI", budgetDistribution: "Distribusi Anggaran",
+    noBudget: "Belum ada anggaran untuk", aiUnavailable: "AI service belum tersedia",
+    noRecommendation: "Belum ada rekomendasi", basedOnUMR: "Berdasarkan UMR",
+    recLimit: "Limit rekomendasi:", saveBtn: "Simpan", cancelBtn: "Batal",
+    catatanTitle: "Catatan Keuangan",
+    tabIncome: "💚 Pemasukan", tabExpense: "🔴 Pengeluaran", tabRecurring: "🔄 Rutin",
+    addRecurring: "+ Tambah Rutin", addNew: "+ Tambah",
+    noIncome: "Belum ada transaksi pemasukan bulan ini",
+    noExpense: "Belum ada transaksi pengeluaran bulan ini",
+    noRecurring: "Belum ada pengeluaran rutin",
+    active: "Aktif", inactive: "Nonaktif", dueDate: "jatuh tempo",
+    pg: "Hal", of: "dari", transactions: "transaksi",
+    aiAccuracy: "Akurasi AI:",
+  },
+  en: {
+    welcome: "Welcome,", loading: "Loading...",
+    addTx: "+ Transaction", noData: "No data available",
+    // Dashboard
+    sisaBudget: "Budget Remaining", pemasukan: "Income", pengeluaran: "Expenses",
+    todayInsight: "Today's Insight", aiLoading: "AI service unavailable",
+    monthlyAnalysis: "Monthly Financial Analysis",
+    spendingLabel: "Spending Pattern Label", basedOnCategory: "Based on this month's categories",
+    // Grafik
+    grafikTitle: "Your Spending Summary", expenseByCategory: "Expenses by Category",
+    incomeByCategory: "Income by Category", recent: "Recent",
+    financialTrend: "Financial Trend", prediksi: "Next Month Prediction",
+    basedOnAI: "Based on AI", fromLastMonth: "from last month",
+    // Budgeting
+    budgetTitle: "Budgeting", monthlyBudget: "Monthly Budget", addBudget: "+ Add",
+    overbudgetAlert: "Overbudget Alert!", exceedBudget: "exceeded this month's budget",
+    aiRecommendation: "AI Recommendations", budgetDistribution: "Budget Distribution",
+    noBudget: "No budget set for", aiUnavailable: "AI service unavailable",
+    noRecommendation: "No recommendations yet", basedOnUMR: "Based on UMR",
+    recLimit: "Recommended limit:", saveBtn: "Save", cancelBtn: "Cancel",
+    // Catatan
+    catatanTitle: "Financial Notes",
+    tabIncome: "💚 Income", tabExpense: "🔴 Expenses", tabRecurring: "🔄 Recurring",
+    addRecurring: "+ Add Recurring", addNew: "+ Add",
+    noIncome: "No income transactions this month",
+    noExpense: "No expense transactions this month",
+    noRecurring: "No recurring expenses",
+    active: "Active", inactive: "Inactive", dueDate: "due date",
+    pg: "Page", of: "of", transactions: "transactions",
+    aiAccuracy: "AI Accuracy:",
+  },
+};
+
+
 export default function App() {
   const [session,     setSession]     = useState(undefined);
   const [page,        setPage]        = useState("dashboard");
@@ -120,10 +183,10 @@ export default function App() {
       {showNotif && <NotifPanel notifs={notifs} onClose={() => setShowNotif(false)} onReadAll={handleReadAll} />}
 
       <main style={{ marginLeft:60, flex:1, overflowY:"auto", maxHeight:"100vh" }}>
-        {page === "dashboard"  && <Dashboard profile={profile} notifs={notifs} onBell={() => setShowNotif(v => !v)} theme={theme} darkMode={darkMode} />}
-        {page === "grafik"     && <Grafik theme={theme} />}
-        {page === "budgeting"  && <Budgeting theme={theme} />}
-        {page === "catatan"    && <Catatan theme={theme} />}
+        {page === "dashboard"  && <Dashboard profile={profile} notifs={notifs} onBell={() => setShowNotif(v => !v)} theme={theme} darkMode={darkMode} lang={lang} />}
+        {page === "grafik"     && <Grafik theme={theme} lang={lang} />}
+        {page === "budgeting"  && <Budgeting theme={theme} lang={lang} />}
+        {page === "catatan"    && <Catatan theme={theme} lang={lang} />}
         {page === "settings"   && (
           <Settings
             profile={profile}
@@ -141,7 +204,8 @@ export default function App() {
 
 // ─────────────────────────────────────────────────────────────────────────────
 
-function Dashboard({ profile, notifs, onBell, theme, darkMode }) {
+function Dashboard({ profile, notifs, onBell, theme, darkMode, lang = "id" }) {
+  const t = T[lang] || T.id;
   const [month, setMonth]   = useState(currentMonthStr);
   const [sum, setSum]     = useState(null);
   const [chart, setChart] = useState([]);
@@ -163,7 +227,7 @@ function Dashboard({ profile, notifs, onBell, theme, darkMode }) {
   }, [month]);
 
   const unread = notifs.filter(n => !n.read).length;
-  if (!sum) return <div style={{ padding:32, color:"#4A7A32", textAlign:"center" }}>Memuat...</div>;
+  if (!sum) return <div style={{ padding:32, color:"#4A7A32", textAlign:"center" }}>{t.loading}</div>;
 
   const netPositive = sum.sisaBudget >= 0;
 
@@ -173,7 +237,7 @@ function Dashboard({ profile, notifs, onBell, theme, darkMode }) {
 
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:20 }}>
         <div>
-          <div style={{ color: theme.sub, fontSize:13 }}>Welcome,</div>
+          <div style={{ color: theme.sub, fontSize:13 }}>{t.welcome}</div>
           <div style={{ fontSize:26, fontWeight:800, color: theme.txt }}>{profile?.name ?? "—"}</div>
         </div>
         <div style={{ display:"flex", gap:10, alignItems:"center" }}>
@@ -196,8 +260,8 @@ function Dashboard({ profile, notifs, onBell, theme, darkMode }) {
             </div>
           )}
           <div style={{ display:"flex", justifyContent:"space-between", marginTop:10, fontSize:11, opacity:0.85 }}>
-            <span>Pemasukan<br /><b style={{ fontSize:13 }}>{fmtS(sum.pemasukan)}</b></span>
-            <span style={{ textAlign:"right" }}>Pengeluaran<br /><b style={{ fontSize:13 }}>{fmtS(sum.pengeluaran)}</b></span>
+            <span>{t.pemasukan}<br /><b style={{ fontSize:13 }}>{fmtS(sum.pemasukan)}</b></span>
+            <span style={{ textAlign:"right" }}>{t.pengeluaran}<br /><b style={{ fontSize:13 }}>{fmtS(sum.pengeluaran)}</b></span>
           </div>
         </div>
 
@@ -207,9 +271,9 @@ function Dashboard({ profile, notifs, onBell, theme, darkMode }) {
             <>
               <div style={{ fontSize:22, fontWeight:900, color:"#4A7A32", marginBottom:4 }}>✨ {label.label}</div>
               {label.traits?.slice(0,2).map((t,i) => <div key={i} style={{ fontSize:11, color: theme.sub, marginBottom:2 }}>• {t}</div>)}
-              {label.confidence && <div style={{ fontSize:10, color: theme.sub, marginTop:6 }}>Akurasi AI: {Math.round(label.confidence*100)}%</div>}
+              {label.confidence && <div style={{ fontSize:10, color: theme.sub, marginTop:6 }}>{t.aiAccuracy} {Math.round(label.confidence*100)}%</div>}
             </>
-          ) : <div style={{ fontSize:13, color: theme.sub }}>AI service belum tersedia</div>}
+          ) : <div style={{ fontSize:13, color: theme.sub }}>{t.aiLoading}</div>}
           <div style={{ position:"absolute", right:12, bottom:10, fontSize:32, opacity:0.06 }}>🤖</div>
         </div>
       </div>
@@ -245,7 +309,8 @@ function Dashboard({ profile, notifs, onBell, theme, darkMode }) {
   );
 }
 
-function Grafik({ theme }) {
+function Grafik({ theme, lang = "id" }) {
+  const t = T[lang] || T.id;
   const [trendMonths, setTrendMonths] = useState(6);
   const [chart, setChart]       = useState([]);
   const [pieExpense, setPieExpense] = useState([]);
@@ -254,17 +319,27 @@ function Grafik({ theme }) {
   const [pred, setPred]         = useState(null);
   const month = currentMonthStr();
 
-  useEffect(() => { API.getTrendChart(trendMonths).then(setChart).catch(() => {}); }, [trendMonths]);
   useEffect(() => {
-    API.getCategoryChart(month).then(setPieExpense).catch(() => {});
-    API.getIncomeCategoryChart(month).then(setPieIncome).catch(() => {});
-    API.listTransactions({}).then(r => setRecent(r.data?.slice(0,6)||[])).catch(() => {});
-    API.getPrediction().then(setPred).catch(() => {});
-  }, []);
+    API.getCategoryChart(month)
+      .then(setPieExpense)
+      .catch(console.error);
+
+    API.getIncomeCategoryChart(month)
+      .then(setPieIncome)
+      .catch(console.error);
+
+    API.listTransactions({})
+      .then(r => setRecent(r.data?.slice(0, 6) || []))
+      .catch(console.error);
+
+    API.getPrediction()
+      .then(setPred)
+      .catch(console.error);
+  }, [month]);
 
   return (
     <div style={{ padding:"20px 24px", animation:"fadeIn .3s ease" }}>
-      <div style={{ fontWeight:800, fontSize:20, color: theme.txt, marginBottom:6 }}>Ringkasan Pengeluaranmu</div>
+      <div style={{ fontWeight:800, fontSize:20, color: theme.txt, marginBottom:6 }}>{t.grafikTitle}</div>
       <div style={{ display:"flex", gap:6, marginBottom:16 }}>
         {[{l:"6 Bln",v:6},{l:"3 Bln",v:3},{l:"1 Tahun",v:12}].map(({l,v}) => (
           <button key={v} onClick={() => setTrendMonths(v)} style={{ padding:"5px 14px", borderRadius:999, border:"none", cursor:"pointer", fontSize:12, fontWeight:600, background:trendMonths===v?"#4A7A32": theme.card, color:trendMonths===v?"white": theme.sub, transition:"all .2s" }}>{l}</button>
@@ -320,7 +395,14 @@ function Grafik({ theme }) {
             <div style={{ fontWeight:800, fontSize:14, marginBottom:3 }}>🔮 Prediksi Bulan Depan</div>
             <div style={{ fontSize:11, opacity:0.75, marginBottom:8 }}>Berdasarkan AI</div>
             <div style={{ fontSize:26, fontWeight:900 }}>{fmtS(pred.prediksi)}</div>
-            {pred.context?.change_pct != null && <div style={{ fontSize:11, opacity:0.8, marginTop:4 }}>{pred.context.change_pct>0?"▲":"▼"} {Math.abs(pred.context.change_pct)}% dari bulan lalu</div>}
+            {
+              pred.context?.change_pct != null && (
+                <div style={{ fontSize: 11, opacity: 0.8, marginTop: 4 }}>
+                  {pred.context.change_pct > 0 ? "▲" : "▼"}{" "}
+                  {Math.abs(pred.context.change_pct)}% {t.fromLastMonth}
+                </div>
+              )
+            }
           </div>
         )}
       </div>
@@ -328,7 +410,8 @@ function Grafik({ theme }) {
   );
 }
 
-function Budgeting({ theme }) {
+function Budgeting({ theme, lang = "id" }) {
+  const t = T[lang] || T.id;
   const [budgets, setBudgets] = useState([]);
   const [recs, setRecs]       = useState(null);
   const [showAdd, setShowAdd] = useState(false);
@@ -354,12 +437,12 @@ function Budgeting({ theme }) {
 
   return (
     <div style={{ padding:"20px 24px", animation:"fadeIn .3s ease" }}>
-      <div style={{ fontWeight:800, fontSize:20, color: theme.txt, marginBottom:16 }}>Budgeting · {month}</div>
+      <div style={{ fontWeight:800, fontSize:20, color: theme.txt, marginBottom:16 }}>{t.budgetTitle} · {month}</div>
       {overBudgets.length > 0 && (
         <div style={{ background:"#FDF0EE", border:"1.5px solid #F5C6BE", borderRadius:14, padding:"12px 16px", marginBottom:16, display:"flex", alignItems:"center", gap:10 }}>
           <span style={{ fontSize:22 }}>⚠️</span>
           <div>
-            <div style={{ fontWeight:700, color:"#C0392B", fontSize:13 }}>Overbudget Alert!</div>
+            <div style={{ fontWeight:700, color:"#C0392B", fontSize:13 }}>{t.overbudgetAlert}</div>
             <div style={{ fontSize:12, color:"#888" }}>{overBudgets.map(b=>b.category).join(", ")} melebihi anggaran bulan ini</div>
           </div>
         </div>
@@ -380,7 +463,7 @@ function Budgeting({ theme }) {
                 <button onClick={handleAdd} style={{ background:"#4A7A32", color:"white", border:"none", borderRadius:8, padding:"7px 14px", fontWeight:700, cursor:"pointer", fontSize:12 }}>Simpan</button>
               </div>
             )}
-            {budgets.length===0 && <div style={{ textAlign:"center", padding:24, color: theme.sub, fontSize:13 }}>Belum ada anggaran untuk {month}</div>}
+            {budgets.length===0 && <div style={{ textAlign:"center", padding:24, color: theme.sub, fontSize:13 }}>{t.noBudget} {month}</div>}
             {budgets.map(b => {
               const pct = Math.min(((b.used ?? b.terpakai ?? 0) / b.limit_amount) * 100, 100);
               const isOver = (b.used ?? b.terpakai ?? 0) > b.limit_amount;
@@ -414,16 +497,16 @@ function Budgeting({ theme }) {
           <div style={{ background:"#2D4A1E", borderRadius:18, padding:16, color:"white", marginBottom:12 }}>
             <div style={{ fontWeight:800, fontSize:14, marginBottom:10 }}>🤖 Rekomendasi AI</div>
             {recs===null && <div style={{ fontSize:12, opacity:0.7 }}>Memuat...</div>}
-            {recs!==null && !Array.isArray(recs?.recommendations) && <div style={{ fontSize:12, opacity:0.7 }}>AI service belum tersedia</div>}
-            {Array.isArray(recs?.recommendations) && recs.recommendations.length===0 && <div style={{ fontSize:12, opacity:0.7 }}>Belum ada rekomendasi</div>}
+            {recs!==null && !Array.isArray(recs?.recommendations) && <div style={{ fontSize:12, opacity:0.7 }}>{t.aiUnavailable}</div>}
+            {Array.isArray(recs?.recommendations) && recs.recommendations.length===0 && <div style={{ fontSize:12, opacity:0.7 }}>{t.noRecommendation}</div>}
             {Array.isArray(recs?.recommendations) && recs.recommendations.map((r,i) => (
               <div key={i} style={{ background:"rgba(255,255,255,0.12)", borderRadius:10, padding:10, marginBottom:8 }}>
                 <div style={{ fontWeight:700, fontSize:12 }}>{CAT_ICONS[r.category]||"💡"} {r.category}</div>
-                <div style={{ fontSize:11, opacity:0.85, marginTop:3 }}>Limit rekomendasi: <b>{fmtS(r.recommended_limit)}</b></div>
+                <div style={{ fontSize:11, opacity:0.85, marginTop:3 }}>{t.recLimit} <b>{fmtS(r.recommended_limit)}</b></div>
                 <div style={{ fontSize:11, opacity:0.7, marginTop:3, fontStyle:"italic" }}>{r.reason}</div>
               </div>
             ))}
-            {recs?.basedOnCity && <div style={{ fontSize:10, opacity:0.55, marginTop:8 }}>Berdasarkan UMR {recs.basedOnCity}</div>}
+            {recs?.basedOnCity && <div style={{ fontSize:10, opacity:0.55, marginTop:8 }}>{t.basedOnUMR} {recs.basedOnCity}</div>}
           </div>
           <div style={{ background: theme.card, borderRadius:18, padding:16, border:`2px solid ${theme.bdr}` }}>
             <div style={{ fontWeight:700, fontSize:13, marginBottom:10, color: theme.txt }}>Distribusi Anggaran</div>
@@ -437,7 +520,8 @@ function Budgeting({ theme }) {
   );
 }
 
-function Catatan({ theme }) {
+function Catatan({ theme, lang = "id" }) {
+  const t = T[lang] || T.id;
   const [tab, setTab]               = useState("expense");
   const [txs, setTxs]               = useState([]);
   const [recurring, setRecurring]   = useState([]);
@@ -503,15 +587,15 @@ function Catatan({ theme }) {
     <div style={{ padding:"20px 24px", animation:"fadeIn .3s ease" }}>
       {showTx && <TxModal onSave={handleSaveTx} onClose={() => setShowTx(false)} defaultType={tab==="expense"?"expense":"income"} />}
       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:14 }}>
-        <div style={{ fontWeight:800, fontSize:20, color: theme.txt }}>Catatan Keuangan</div>
+        <div style={{ fontWeight:800, fontSize:20, color: theme.txt }}>{t.catatanTitle}</div>
         <input type="month" value={month} onChange={e => { setMonth(e.target.value); setTxs([]); }}
           style={{ padding:"6px 10px", borderRadius:8, border:`1.5px solid ${theme.bdr}`, fontSize:12, fontFamily:"'Poppins',sans-serif", background: theme.card, color: theme.txt, cursor:"pointer" }} />
       </div>
       <div style={{ display:"flex", gap:6, marginBottom:14, flexWrap:"wrap", alignItems:"center" }}>
-        {TABS.map(t => (
-          <button key={t.id} onClick={()=>{setTab(t.id);setShowTx(false);setShowRecForm(false);}} style={{ padding:"6px 16px", borderRadius:999, border:"none", cursor:"pointer", fontSize:12, fontWeight:600, background:tab===t.id?"#4A7A32": theme.card, color:tab===t.id?"white": theme.sub, transition:"all .2s" }}>{t.label}</button>
+        {TABS.map(tab_ => (
+          <button key={tab_.id} onClick={()=>{setTab(tab_.id);setShowTx(false);setShowRecForm(false);}} style={{ padding:"6px 16px", borderRadius:999, border:"none", cursor:"pointer", fontSize:12, fontWeight:600, background:tab===tab_.id?"#4A7A32": theme.card, color:tab===tab_.id?"white": theme.sub, transition:"all .2s" }}>{tab_.label}</button>
         ))}
-        <button onClick={()=>tab==="rutin"?setShowRecForm(v=>!v):setShowTx(true)} style={{ marginLeft:"auto", background: theme.card, border:`1.5px solid ${theme.bdr}`, color:"#4A7A32", borderRadius:999, padding:"6px 16px", fontWeight:700, fontSize:12, cursor:"pointer" }}>+ {tab==="rutin"?"Tambah Rutin":"Tambah"}</button>
+        <button onClick={()=>tab==="rutin"?setShowRecForm(v=>!v):setShowTx(true)} style={{ marginLeft:"auto", background: theme.card, border:`1.5px solid ${theme.bdr}`, color:"#4A7A32", borderRadius:999, padding:"6px 16px", fontWeight:700, fontSize:12, cursor:"pointer" }}>+ {tab==="rutin"?t.addRecurring.slice(2):t.addNew.slice(2)}</button>
       </div>
 
       {tab==="rutin" && showRecForm && (
@@ -525,7 +609,7 @@ function Catatan({ theme }) {
             {VALID_FREQUENCIES.map(f=><option key={f} value={f}>{f}</option>)}
           </select>
           <input type="date" value={recForm.next_due_date} onChange={e=>setRecForm(p=>({...p,next_due_date:e.target.value}))} style={{ flex:1, minWidth:120, padding:"7px 10px", borderRadius:8, border:`1px solid ${theme.bdr}`, fontSize:12, background: theme.inp, color: theme.txt }} />
-          <button onClick={handleSaveRec} style={{ background:"#4A7A32", color:"white", border:"none", borderRadius:8, padding:"7px 14px", fontWeight:700, cursor:"pointer", fontSize:12 }}>Simpan</button>
+          <button onClick={handleSaveRec} style={{ background:"#4A7A32", color:"white", border:"none", borderRadius:8, padding:"7px 14px", fontWeight:700, cursor:"pointer", fontSize:12 }}>{t.saveBtn}</button>
         </div>
       )}
 
@@ -549,7 +633,7 @@ function Catatan({ theme }) {
                 <button onClick={()=>handleDeleteTx(t.id)} style={{ background:"none", border:"none", color: theme.sub, cursor:"pointer", fontSize:14, padding:"0 4px" }}>✕</button>
               </div>
             ))}
-            {pagination && pagination.totalPages>1 && <div style={{ textAlign:"center", padding:"12px 0", fontSize:12, color: theme.sub }}>Hal 1 dari {pagination.totalPages} · {pagination.total} transaksi</div>}
+            {pagination && pagination.totalPages>1 && <div style={{ textAlign:"center", padding:"12px 0", fontSize:12, color: theme.sub }}>{t.pg} 1 {t.of} {pagination.totalPages} · {pagination.total} {t.transactions}</div>}
           </>
         )}
         {tab==="rutin" && (
@@ -565,7 +649,7 @@ function Catatan({ theme }) {
                 <span style={{ fontSize:20 }}>{CAT_ICONS[r.category]||"🔄"}</span>
                 <div style={{ flex:1 }}>
                   <div style={{ fontWeight:600, fontSize:13, color: theme.txt }}>{r.name}</div>
-                  <div style={{ fontSize:11, color: theme.sub, marginTop:2 }}>{r.category} · {r.frequency} · jatuh tempo {r.next_due_date}</div>
+                  <div style={{ fontSize:11, color: theme.sub, marginTop:2 }}>{r.category} · {r.frequency} · {t.dueDate} {r.next_due_date}</div>
                 </div>
                 <div style={{ fontWeight:800, fontSize:14, color:"#C0392B" }}>-{fmtS(r.amount)}</div>
                 <span style={{ fontSize:10, padding:"2px 7px", borderRadius:999, background:r.is_active?"#E8F5E9":"#f5f5f5", color:r.is_active?"#388E3C":"#aaa", fontWeight:600 }}>{r.is_active?"Aktif":"Nonaktif"}</span>

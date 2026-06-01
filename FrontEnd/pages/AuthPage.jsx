@@ -99,25 +99,25 @@ export default function AuthPage({ onAuth }) {
   return (
     <div style={{
       minHeight: "100vh", background: CREAM,
-      fontFamily: "'DM Sans', sans-serif",
+      fontFamily: "'Poppins', sans-serif",
       display: "flex", alignItems: "center", justifyContent: "center",
     }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=DM+Sans:wght@400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap');
         *{box-sizing:border-box;margin:0;padding:0}
         @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
         @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
         .auth-input{
           width:100%;padding:11px 14px;border-radius:10px;
           border:1.5px solid ${LIGHT};background:white;
-          font-size:14px;font-family:inherit;outline:none;
+          font-size:14px;font-family:'Poppins',sans-serif;outline:none;
           transition:border-color .2s;
         }
         .auth-input:focus{border-color:${GREEN};}
         .auth-btn{
           width:100%;padding:13px;border-radius:12px;border:none;
           background:${GREEN};color:white;font-size:15px;font-weight:700;
-          font-family:inherit;cursor:pointer;transition:all .2s;
+          font-family:'Poppins',sans-serif;cursor:pointer;transition:all .2s;
           letter-spacing:.2px;
         }
         .auth-btn:hover{background:${DARK_GREEN};}
@@ -125,7 +125,7 @@ export default function AuthPage({ onAuth }) {
         .auth-link{
           background:none;border:none;color:${GREEN};font-size:13px;
           font-weight:600;cursor:pointer;text-decoration:underline;
-          font-family:inherit;padding:0;
+          font-family:'Poppins',sans-serif;padding:0;
         }
       `}</style>
 
@@ -142,8 +142,13 @@ export default function AuthPage({ onAuth }) {
           <div style={{ position:"absolute", bottom:-80, left:-40, width:260, height:260, borderRadius:"50%", border:"1px solid rgba(255,255,255,.08)" }} />
 
           <div style={{ position:"relative", zIndex:1 }}>
-            <div style={{ fontSize:28, marginBottom:10 }}>💰</div>
-            <div style={{ fontFamily:"'Playfair Display',serif", fontSize:28, fontWeight:800, lineHeight:1.2, marginBottom:12 }}>
+            <div style={{ marginBottom:14 }}>
+              <svg width="52" height="36" viewBox="0 0 699 488" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M613.491 83.5835C614.037 83.8489 614.635 83.9869 615.242 83.9869H655.149C658.476 83.9869 660.349 87.8126 658.308 90.4404L537.161 246.426C536.616 247.127 536.32 247.991 536.32 248.879V475.709C536.32 477.918 534.529 479.709 532.32 479.709H442.32C440.111 479.709 438.32 477.918 438.32 475.709V385.362C438.32 381.552 433.498 379.9 431.161 382.909L386.754 440.152L375.213 475.213C374.681 476.866 373.143 477.987 371.406 477.987H359.713C358.24 477.987 356.885 477.177 356.189 475.878L229.845 240.387C228.336 237.575 224.304 237.575 222.795 240.387L96.4516 475.878C95.7549 477.177 94.4006 477.987 92.9269 477.987H4.00556C0.981521 477.986 -0.948857 474.761 0.480811 472.096L176.189 144.596C176.885 143.297 178.24 142.487 179.713 142.487H272.927C274.401 142.487 275.755 143.297 276.452 144.596L372.332 323.305C373.7 325.856 377.24 326.154 379.016 323.868L438.195 247.67L565.32 83.9869L576.828 69.2587C577.99 67.7715 580.033 67.2989 581.73 68.1249L613.491 83.5835Z" fill="white" opacity="0.9"/>
+                <path d="M674.651 148.825C674.218 151.873 670.648 153.31 668.224 151.411L646.351 134.272C644.607 132.906 642.084 133.217 640.725 134.967L432.307 403.323L378.096 473.133C376.32 475.417 372.782 475.117 371.414 472.568L246.846 240.386C245.337 237.574 241.305 237.574 239.796 240.386L113.452 475.877C112.756 477.176 111.401 477.986 109.928 477.986H21.0063C17.9823 477.986 16.0519 474.76 17.4815 472.095L193.189 144.595C193.886 143.296 195.24 142.486 196.714 142.486H289.928C291.401 142.486 292.756 143.296 293.452 144.595L389.333 323.305C390.701 325.855 394.241 326.153 396.016 323.867L579.822 87.2029C581.173 85.4635 580.864 82.9592 579.13 81.6008L561.485 67.7748C559.062 65.8757 559.603 62.0649 562.459 60.9154L688.26 10.295C691.116 9.14556 694.146 11.5195 693.713 14.5682L674.651 148.825Z" fill="white" opacity="0.7"/>
+              </svg>
+            </div>
+            <div style={{ fontFamily:"'Poppins',sans-serif", fontSize:26, fontWeight:800, lineHeight:1.2, marginBottom:12 }}>
               Smart Finance<br />Tracker
             </div>
             <div style={{ fontSize:14, opacity:.75, lineHeight:1.7 }}>
@@ -173,7 +178,7 @@ export default function AuthPage({ onAuth }) {
         }}>
           {mode === "login" ? (
             <>
-              <div style={{ fontFamily:"'Playfair Display',serif", fontSize:26, fontWeight:800, color:"#1a1a1a", marginBottom:6 }}>Selamat datang 👋</div>
+              <div style={{ fontFamily:"'Poppins',sans-serif", fontSize:26, fontWeight:800, color:"#1a1a1a", marginBottom:6 }}>Selamat datang 👋</div>
               <div style={{ fontSize:13, color:"#999", marginBottom:28 }}>Masuk ke akun Smart Finance Tracker kamu</div>
 
               <form onSubmit={handleLogin} style={{ display:"flex", flexDirection:"column", gap:14 }}>
@@ -200,7 +205,7 @@ export default function AuthPage({ onAuth }) {
             </>
           ) : (
             <>
-              <div style={{ fontFamily:"'Playfair Display',serif", fontSize:26, fontWeight:800, color:"#1a1a1a", marginBottom:6 }}>
+              <div style={{ fontFamily:"'Poppins',sans-serif", fontSize:26, fontWeight:800, color:"#1a1a1a", marginBottom:6 }}>
                 {step === 1 ? "Buat akun baru" : "Lengkapi profilmu"}
               </div>
               <div style={{ fontSize:13, color:"#999", marginBottom:24 }}>
