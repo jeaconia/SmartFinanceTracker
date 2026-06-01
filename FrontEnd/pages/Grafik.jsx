@@ -70,7 +70,7 @@ export default function Grafik({ theme, lang = "en" }) {
               <span style={{ fontSize:16 }}>{t.type==="income"?"💼":CAT_ICONS[t.category]||"💸"}</span>
               <div style={{ flex:1, minWidth:0 }}>
                 <div style={{ fontSize:11, fontWeight:600, color: theme.txt, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{t.description||"—"}</div>
-                <div style={{ fontSize:10, color: theme.sub }}>{d.category || t.pemasukan} · {d.date}</div>
+                <div style={{ fontSize:10, color: theme.sub }}>{t.category || t.pemasukan} · {t.date}</div>
               </div>
               <div style={{ fontSize:11, fontWeight:700, color:t.type==="income"?"#4CAF50":"#C0392B", whiteSpace:"nowrap" }}>{t.type==="income"?"+":"-"}{fmtS(t.amount)}</div>
             </div>
