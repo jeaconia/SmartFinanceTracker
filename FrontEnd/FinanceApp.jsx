@@ -142,6 +142,7 @@ export default function App() {
 // ─────────────────────────────────────────────────────────────────────────────
 
 function Dashboard({ profile, notifs, onBell, theme, darkMode }) {
+  const [month, setMonth]   = useState(currentMonthStr);
   const [sum, setSum]     = useState(null);
   const [chart, setChart] = useState([]);
   const [pie, setPie]     = useState([]);
@@ -149,17 +150,17 @@ function Dashboard({ profile, notifs, onBell, theme, darkMode }) {
   const [showTx, setShowTx] = useState(false);
 
   useEffect(() => {
-    const month = currentMonthStr();
+    setSum(null);
     API.getDashboardSummary(month).then(setSum).catch(() => {});
     API.getMonthlyChart().then(setChart).catch(() => {});
     API.getCategoryChart(month).then(setPie).catch(() => {});
     API.getSpendingLabel(month).then(setLabel).catch(() => {});
-  }, []);
+  }, [month]);
 
   const handleSaveTx = useCallback(async (tx) => {
     await API.createTransaction(tx).catch(() => {});
-    API.getDashboardSummary(currentMonthStr()).then(setSum).catch(() => {});
-  }, []);
+    API.getDashboardSummary(month).then(setSum).catch(() => {});
+  }, [month]);
 
   const unread = notifs.filter(n => !n.read).length;
   if (!sum) return <div style={{ padding:32, color:"#4A7A32", textAlign:"center" }}>Memuat...</div>;
@@ -176,6 +177,8 @@ function Dashboard({ profile, notifs, onBell, theme, darkMode }) {
           <div style={{ fontSize:26, fontWeight:800, color: theme.txt }}>{profile?.name ?? "—"}</div>
         </div>
         <div style={{ display:"flex", gap:10, alignItems:"center" }}>
+          <input type="month" value={month} onChange={e => setMonth(e.target.value)}
+            style={{ padding:"6px 10px", borderRadius:8, border:`1.5px solid ${theme.bdr}`, fontSize:12, fontFamily:"'Poppins',sans-serif", background: theme.card, color: theme.txt, cursor:"pointer" }} />
           <button onClick={() => setShowTx(true)} style={{ background:"#4A7A32", color:"white", border:"none", borderRadius:10, padding:"8px 14px", fontWeight:700, fontSize:12, cursor:"pointer" }}>+ Transaksi</button>
           <button onClick={onBell} style={{ background:"none", border:"none", cursor:"pointer", fontSize:22, position:"relative", padding:4 }}>
             🔔{unread > 0 && <span style={{ position:"absolute", top:0, right:0, background:"#C0392B", color:"white", borderRadius:"50%", width:15, height:15, fontSize:9, display:"flex", alignItems:"center", justifyContent:"center", lineHeight:1 }}>{unread}</span>}
@@ -340,7 +343,7 @@ function Budgeting({ theme }) {
   }, [month]);
   useEffect(() => { reload(); }, [reload]);
 
-  const overBudgets = budgets.filter(b => b.over);
+  const overBudgets = budgets.filter(b => b.overbudget);
   const handleAdd = async () => {
     if (!form.category || !form.limit_amount) return;
     await API.createBudget({ category:form.category, limit_amount:Number(form.limit_amount), month }).catch(() => {});
@@ -357,7 +360,7 @@ function Budgeting({ theme }) {
           <span style={{ fontSize:22 }}>⚠️</span>
           <div>
             <div style={{ fontWeight:700, color:"#C0392B", fontSize:13 }}>Overbudget Alert!</div>
-            <div style={{ fontSize:12, color:"#888" }}>{overBudgets.map(b=>b.kat).join(", ")} melebihi anggaran bulan ini</div>
+            <div style={{ fontSize:12, color:"#888" }}>{overBudgets.map(b=>b.category).join(", ")} melebihi anggaran bulan ini</div>
           </div>
         </div>
       )}
@@ -442,11 +445,12 @@ function Catatan({ theme }) {
   const [showTx, setShowTx]         = useState(false);
   const [showRecForm, setShowRecForm] = useState(false);
   const [recForm, setRecForm]       = useState({ name:"", amount:"", category:VALID_CATEGORIES[0], frequency:"monthly", next_due_date:"" });
-  const month = currentMonthStr();
+  const [month, setMonth]           = useState(currentMonthStr);
 
   const reloadTx = useCallback(() => {
     API.listTransactions({ type:tab==="rutin"?undefined:tab, month })
-      .then(r => { setTxs(r.data||[]); setPagination(r.pagination); }).catch(() => {});
+      .then(r => { setTxs(r.data||[]); setPagination(r.pagination); })
+      .catch((e) => { console.error('[Catatan] listTransactions error:', e.message); setTxs([]); });
   }, [tab, month]);
 
   useEffect(() => {
@@ -498,7 +502,11 @@ function Catatan({ theme }) {
   return (
     <div style={{ padding:"20px 24px", animation:"fadeIn .3s ease" }}>
       {showTx && <TxModal onSave={handleSaveTx} onClose={() => setShowTx(false)} defaultType={tab==="expense"?"expense":"income"} />}
-      <div style={{ fontWeight:800, fontSize:20, color: theme.txt, marginBottom:14 }}>Catatan Keuangan</div>
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:14 }}>
+        <div style={{ fontWeight:800, fontSize:20, color: theme.txt }}>Catatan Keuangan</div>
+        <input type="month" value={month} onChange={e => { setMonth(e.target.value); setTxs([]); }}
+          style={{ padding:"6px 10px", borderRadius:8, border:`1.5px solid ${theme.bdr}`, fontSize:12, fontFamily:"'Poppins',sans-serif", background: theme.card, color: theme.txt, cursor:"pointer" }} />
+      </div>
       <div style={{ display:"flex", gap:6, marginBottom:14, flexWrap:"wrap", alignItems:"center" }}>
         {TABS.map(t => (
           <button key={t.id} onClick={()=>{setTab(t.id);setShowTx(false);setShowRecForm(false);}} style={{ padding:"6px 16px", borderRadius:999, border:"none", cursor:"pointer", fontSize:12, fontWeight:600, background:tab===t.id?"#4A7A32": theme.card, color:tab===t.id?"white": theme.sub, transition:"all .2s" }}>{t.label}</button>

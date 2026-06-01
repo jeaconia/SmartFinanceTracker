@@ -34,8 +34,14 @@ export const fmtS = (n) => {
  * @returns {string} Current month in YYYY-MM format
  */
 export const currentMonthStr = () => {
-  const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`;
+  // Pakai WIB (UTC+7) agar konsisten dengan backend
+  const d = new Date(Date.now() + 7 * 60 * 60 * 1000);
+  return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
+};
+
+export const todayWIB = () => {
+  const d = new Date(Date.now() + 7 * 60 * 60 * 1000);
+  return d.toISOString().split("T")[0];
 };
 
 /**

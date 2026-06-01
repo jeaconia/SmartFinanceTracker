@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { VALID_CATEGORIES, CAT_ICONS } from "../constants/categories.js";
+import { todayWIB } from "../utils/format.js";
 
 export default function TxModal({ onSave, onClose, defaultType = "expense" }) {
   const [form, setForm] = useState({
     type:        defaultType,
     amount:      "",
-    date:        new Date().toISOString().split("T")[0],
+    date:        todayWIB(),
     description: "",
     category:    VALID_CATEGORIES[0],
   });

@@ -7,6 +7,12 @@ const supabase = require('../config/supabase');
  * @param {string} userId - UUID of the user
  * @param {string} month  - 'YYYY-MM' format
  */
+function monthEndDate(month) {
+  const [year, mo] = month.split('-').map(Number);
+  const lastDay = new Date(year, mo, 0).getDate();
+  return `${month}-${String(lastDay).padStart(2, '0')}`;
+}
+
 async function upsertMonthlyAnalytics(userId, month) {
   try {
     // ── 1. Aggregate current month's transactions ──────────────────────────
@@ -14,7 +20,8 @@ async function upsertMonthlyAnalytics(userId, month) {
       .from('transactions')
       .select('type, amount, category')
       .eq('user_id', userId)
-      .like('date', `${month}-%`);
+      .gte('date', `${month}-01`)
+      .lte('date', monthEndDate(month));
 
     if (txError) throw txError;
 
@@ -92,7 +99,7 @@ async function upsertMonthlyAnalytics(userId, month) {
           avg_3month_expense,
           spending_growth_rate,
           category_ratio,
-          calculated_at: new Date().toISOString(),
+          calculated_at: new Date().toISOString(), // stored as UTC, display layer converts to WIB
         },
         { onConflict: 'user_id,month' }
       );

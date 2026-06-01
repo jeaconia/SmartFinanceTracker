@@ -127,7 +127,7 @@ export async function deleteTransaction(id) {
 export async function listBudgets(month) {
   const q = month ? `?month=${month}` : "";
   const { data } = await apiFetch(`/api/budgets${q}`);
-  return data.map(b => ({ id: b.id, kat: b.category, icon: CAT_ICONS[b.category] || "💰", anggaran: b.limit_amount, terpakai: b.used ?? 0, over: b.overbudget ?? false, color: CAT_COLORS[b.category] || "#4A7A32", month: b.month }));
+  return data;
 }
 export async function createBudget({ category, limit_amount, month }) {
   const { data } = await apiFetch("/api/budgets", { method: "POST", body: JSON.stringify({ category, limit_amount, month }) });
