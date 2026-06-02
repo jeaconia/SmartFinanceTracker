@@ -37,7 +37,7 @@ export default function Dashboard({ profile, notifs, onBell, theme, darkMode, la
     <div style={{ padding:"20px 24px", animation:"fadeIn .3s ease" }}>
       {showTx && <TxModal onSave={handleSaveTx} onClose={() => setShowTx(false)} lang={lang} />}
 
-      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:20 }}>
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:20, flexWrap:"wrap", gap:10 }}>
         <div>
           <div style={{ color: theme.sub, fontSize:13 }}>{t.welcome}</div>
           <div style={{ fontSize:26, fontWeight:800, color: theme.txt }}>{profile?.name ?? "—"}</div>
@@ -52,7 +52,7 @@ export default function Dashboard({ profile, notifs, onBell, theme, darkMode, la
         </div>
       </div>
 
-      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14, marginBottom:14 }}>
+      <div className="dash-grid-summary" style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14, marginBottom:14 }}>
         <div style={{ background:"linear-gradient(135deg,#3A5C28 0%,#5a6b3a 100%)", borderRadius:18, padding:"18px 20px", color:"white" }}>
           <div style={{ fontSize:12, opacity:0.8, marginBottom:4 }}>{t.sisaBudget} · {sum.month}</div>
           <div style={{ fontSize:30, fontWeight:900, letterSpacing:-1, color:netPositive?"white":"#FFB3B3" }}>{fmtS(sum.sisaBudget)}</div>
@@ -80,7 +80,7 @@ export default function Dashboard({ profile, notifs, onBell, theme, darkMode, la
         </div>
       </div>
 
-      <div style={{ display:"grid", gridTemplateColumns:"1fr 240px", gap:14 }}>
+      <div className="dash-grid-charts" style={{ display:"grid", gridTemplateColumns:"1fr 240px", gap:14 }}>
         <div style={{ background: theme.card, borderRadius:18, padding:"18px 20px" }}>
           <div style={{ fontWeight:700, fontSize:14, color: theme.txt, marginBottom:6 }}>{t.monthlyAnalysis}</div>
           <div style={{ display:"flex", gap:12, marginBottom:4 }}>

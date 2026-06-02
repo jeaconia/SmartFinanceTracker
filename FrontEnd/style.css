@@ -1014,3 +1014,135 @@ input, select {
 .dark .page-tab-button.inactive:hover {
   background: rgba(255,255,255,0.05);
 }
+
+/* ══════════════════════════════════════════════
+   MOBILE RESPONSIVE — breakpoint ≤ 768px
+   ══════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+
+  /* ── Root layout: stack vertically, sidebar becomes bottom bar ── */
+  .app-root {
+    flex-direction: column;
+  }
+
+  .page-main {
+    margin-left: 0 !important;
+    margin-bottom: 64px; /* space for bottom nav */
+    max-height: none;
+    overflow-y: visible;
+  }
+
+  /* ── Sidebar → bottom navigation bar ── */
+  .sidebar-root {
+    width: 100% !important;
+    height: 64px;
+    top: auto !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0;
+    flex-direction: row !important;
+    padding: 0 8px !important;
+    gap: 0 !important;
+    justify-content: space-around;
+    align-items: center;
+    border-top: 1px solid rgba(255,255,255,0.12);
+    z-index: 200;
+  }
+
+  /* Hide logo in bottom bar */
+  .sidebar-logo {
+    display: none !important;
+  }
+
+  /* Hide spacer in bottom bar */
+  .sidebar-spacer {
+    display: none !important;
+  }
+
+  /* Nav buttons bigger hit area */
+  .sidebar-nav-button,
+  .sidebar-action-button,
+  .sidebar-avatar-button {
+    width: 48px !important;
+    height: 48px !important;
+  }
+
+  /* Profile popup goes up instead of right */
+  .sidebar-popup {
+    left: auto !important;
+    right: 8px !important;
+    bottom: 68px !important;
+  }
+
+  .sidebar-popup-arrow {
+    display: none;
+  }
+
+  /* ── Auth card: single column ── */
+  .auth-card {
+    flex-direction: column;
+    max-width: 100%;
+    min-height: unset;
+    border-radius: 0;
+    margin: 0;
+  }
+
+  .auth-left {
+    width: 100% !important;
+    padding: 28px 24px 20px;
+    min-height: unset;
+  }
+
+  .auth-right {
+    padding: 28px 24px 32px;
+  }
+
+  .auth-root {
+    align-items: flex-start;
+  }
+
+  .auth-grid-2 {
+    grid-template-columns: 1fr;
+  }
+
+  /* ── Page root: tighter padding ── */
+  .page-root {
+    padding: 16px !important;
+  }
+
+  /* ── Generic 2-column grids → single column ── */
+  .page-grid-2 {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* ── Transaction modal: full-width ── */
+  .tx-modal-card {
+    width: calc(100vw - 32px) !important;
+    max-width: 360px;
+  }
+
+  /* ── Notification panel: full-width ── */
+  .notif-panel {
+    top: auto !important;
+    bottom: 72px !important;
+    left: 8px !important;
+    right: 8px !important;
+    width: auto !important;
+  }
+}
+
+/* ── Dashboard inline grids (set via style prop) — override via class ── */
+@media (max-width: 768px) {
+  /* We add a .mobile-stack class via JS to override inline grid styles */
+  .dash-grid-summary,
+  .dash-grid-charts,
+  .grafik-grid-pie,
+  .grafik-grid-bottom,
+  .budget-grid,
+  .catatan-rec-form {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+  }
+}

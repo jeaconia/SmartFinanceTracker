@@ -42,7 +42,7 @@ export default function Grafik({ theme, lang = "en" }) {
           <button key={v} onClick={() => setTrendMonths(v)} style={{ padding:"5px 14px", borderRadius:999, border:"none", cursor:"pointer", fontSize:12, fontWeight:600, background:trendMonths===v?"#4A7A32": theme.card, color:trendMonths===v?"white": theme.sub, transition:"all .2s" }}>{l}</button>
         ))}
       </div>
-      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 220px", gap:12, marginBottom:12 }}>
+      <div className="grafik-grid-pie" style={{ display:"grid", gridTemplateColumns:"1fr 1fr 220px", gap:12, marginBottom:12 }}>
         <div style={{ background: theme.card, borderRadius:18, padding:16 }}>
           <div style={{ fontWeight:700, fontSize:13, color: theme.txt, marginBottom:10 }}>{t.expenseByCategory}</div>
           <div style={{ display:"flex", justifyContent:"center", marginBottom:10 }}><PieChart data={pieExpense} size={110} /></div>
@@ -77,7 +77,7 @@ export default function Grafik({ theme, lang = "en" }) {
           ))}
         </div>
       </div>
-      <div style={{ display:"grid", gridTemplateColumns:"1fr 220px", gap:12 }}>
+      <div className="grafik-grid-bottom" style={{ display:"grid", gridTemplateColumns:"1fr 220px", gap:12 }}>
         <div style={{ background: theme.card, borderRadius:18, padding:16 }}>
           <div style={{ fontWeight:700, fontSize:13, color: theme.txt, marginBottom:6 }}>{t.financialTrend}</div>
           <div style={{ display:"flex", gap:10, marginBottom:4 }}>

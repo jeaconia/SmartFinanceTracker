@@ -42,7 +42,7 @@ export default function Budgeting({ theme, lang = "en" }) {
           </div>
         </div>
       )}
-      <div style={{ display:"grid", gridTemplateColumns:"1fr 250px", gap:16 }}>
+      <div className="budget-grid" style={{ display:"grid", gridTemplateColumns:"1fr 250px", gap:16 }}>
         <div>
           <div style={{ background: theme.card, borderRadius:18, padding:18 }}>
             <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:14 }}>

@@ -88,7 +88,7 @@ export default function Catatan({ theme, lang = "en" }) {
       </div>
 
       {tab==="rutin" && showRecForm && (
-        <div style={{ background: theme.card, borderRadius:14, padding:14, marginBottom:14, display:"flex", gap:8, flexWrap:"wrap", border:`1.5px solid ${theme.bdr}` }}>
+        <div className="catatan-rec-form" style={{ background: theme.card, borderRadius:14, padding:14, marginBottom:14, display:"flex", gap:8, flexWrap:"wrap", border:`1.5px solid ${theme.bdr}` }}>
           <input placeholder={t.recurringNamePlaceholder} value={recForm.name} onChange={e=>setRecForm(p=>({...p,name:e.target.value}))} style={{ flex:2, minWidth:120, padding:"7px 10px", borderRadius:8, border:`1px solid ${theme.bdr}`, fontSize:12, background: theme.inp, color: theme.txt }} />
           <input placeholder={t.amountPlaceholder} type="number" value={recForm.amount} onChange={e=>setRecForm(p=>({...p,amount:e.target.value}))} style={{ flex:1, minWidth:100, padding:"7px 10px", borderRadius:8, border:`1px solid ${theme.bdr}`, fontSize:12, background: theme.inp, color: theme.txt }} />
           <select value={recForm.category} onChange={e=>setRecForm(p=>({...p,category:e.target.value}))} style={{ flex:1, minWidth:120, padding:"7px 10px", borderRadius:8, border:`1px solid ${theme.bdr}`, fontSize:12, background: theme.inp, color: theme.txt }}>
