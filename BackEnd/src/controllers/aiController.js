@@ -113,7 +113,6 @@ async function predictNextMonthExpense(req, res) {
   // ── Persist to ai_results (fire-and-forget) ───────────────────────────────
   upsertAiResult(userId, nextMonth(), {
     predicted_total_expense,
-    prediction_context: predictions.length > 0 ? predictions : null,
   });
 
   return res.json({ success: true, data: result });
