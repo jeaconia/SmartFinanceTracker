@@ -3,7 +3,9 @@
  * Semua panggilan ke backend Express + Supabase.
  *
  * SETUP:
- *   1. Set VITE_API_URL di file .env: VITE_API_URL=http://localhost:3001
+ *   1. Set VITE_API_URL di file .env:
+ *      - Development : VITE_API_URL=http://localhost:3001
+ *      - Production  : VITE_API_URL=https://YOUR_APP.up.railway.app
  *   2. Setelah login Supabase: setAuthToken(session.access_token)
  */
 
@@ -12,11 +14,15 @@ import { timeAgo, monthLabel }    from "../utils/format.js";
 
 /**
  * API_BASE_URL:
- * - Jika VITE_API_URL di-set di .env → pakai nilai tersebut (untuk production/staging)
+ * - Jika VITE_API_URL di-set di .env → pakai nilai tersebut (production / Railway)
  * - Jika tidak di-set → pakai string kosong "" agar request /api/* diteruskan
  *   melalui Vite dev proxy ke backend (menghindari masalah CORS saat development)
+ *
+ * PENTING: Jangan pakai trailing slash di VITE_API_URL
+ * Contoh benar  : https://moni-backend.up.railway.app
+ * Contoh salah  : https://moni-backend.up.railway.app/
  */
-export const API_BASE_URL = import.meta.env?.VITE_API_URL ?? "";
+export const API_BASE_URL = (import.meta.env?.VITE_API_URL ?? "").replace(/\/$/, "");
 
 let _token = null;
 export const setAuthToken   = (t) => { _token = t; };
