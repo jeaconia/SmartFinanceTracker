@@ -48,6 +48,23 @@ async function upsertMonthlyAnalytics(userId, month) {
       }
     }
 
+    // ── 2b. Income category ratio ─────────────────────────────────────────────
+    let income_category_ratio = null;
+    if (monthly_income > 0) {
+      const incomeTotals = {};
+      for (const row of incomeRows) {
+        if (row.category) {
+          incomeTotals[row.category] = (incomeTotals[row.category] || 0) + row.amount;
+        }
+      }
+      if (Object.keys(incomeTotals).length > 0) {
+        income_category_ratio = {};
+        for (const [cat, total] of Object.entries(incomeTotals)) {
+          income_category_ratio[cat] = parseFloat((total / monthly_income).toFixed(4));
+        }
+      }
+    }
+
     // ── 3. Last month's total_expense (t-1) ──────────────────────────────────
     const lastMonth = getNMonthsBefore(month, 1);
     const { data: lastMonthRow, error: lastMonthError } = await supabase
@@ -103,6 +120,7 @@ async function upsertMonthlyAnalytics(userId, month) {
           spending_growth_rate,
           expense_to_income_ratio,
           category_ratio,
+          income_category_ratio,
           calculated_at: new Date().toISOString(), // stored as UTC, display layer converts to WIB
         },
         { onConflict: 'user_id,month' }

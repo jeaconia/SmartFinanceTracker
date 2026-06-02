@@ -2,6 +2,7 @@ const supabase = require('../config/supabase');
 const { upsertMonthlyAnalytics } = require('../services/analyticsService');
 
 const VALID_CATEGORIES = ['Belanja', 'Kesehatan', 'Hiburan', 'Sosial', 'Hewan Peliharaan'];
+const VALID_INCOME_CATEGORIES = ['Gaji', 'Hadiah', 'THR', 'Reimburse', 'Investasi'];
 const VALID_TYPES      = ['income', 'expense'];
 
 /** Derive 'YYYY-MM' from a date string 'YYYY-MM-DD' */
@@ -38,6 +39,9 @@ async function createTransaction(req, res) {
       return res.status(400).json({ success: false, error: `category must be one of: ${VALID_CATEGORIES.join(', ')}` });
     }
   }
+  if (type === 'income' && category && !VALID_INCOME_CATEGORIES.includes(category)) {
+    return res.status(400).json({ success: false, error: `income category must be one of: ${VALID_INCOME_CATEGORIES.join(', ')}` });
+  }
 
   const payload = {
     user_id: userId,
@@ -45,13 +49,10 @@ async function createTransaction(req, res) {
     amount,
     date,
     description: description || null,
+    category: category || null,
     is_recurring: is_recurring || false,
     recurring_id: recurring_id || null,
   };
-
-  if (type === 'expense') {
-    payload.category = category;
-  }
 
   const { data, error } = await supabase
     .from('transactions')
@@ -156,10 +157,12 @@ async function updateTransaction(req, res) {
     updates.amount = amount;
   }
   if (category !== undefined) {
-    if (!VALID_CATEGORIES.includes(category))
-      return res.status(400).json({ success: false, error: `Invalid category` });
-    if (existing.type === 'income')
-      return res.status(400).json({ success: false, error: 'Cannot set category on income transaction' });
+    if (existing.type === 'expense' && !VALID_CATEGORIES.includes(category)) {
+      return res.status(400).json({ success: false, error: `category must be one of: ${VALID_CATEGORIES.join(', ')}` });
+    }
+    if (existing.type === 'income' && !VALID_INCOME_CATEGORIES.includes(category)) {
+      return res.status(400).json({ success: false, error: `income category must be one of: ${VALID_INCOME_CATEGORIES.join(', ')}` });
+    }
     updates.category = category;
   }
   if (description !== undefined) updates.description = description;
