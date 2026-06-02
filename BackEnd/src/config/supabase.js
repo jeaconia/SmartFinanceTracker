@@ -1,3 +1,4 @@
+const ws = require('ws');
 const { createClient } = require('@supabase/supabase-js');
 
 const supabaseUrl = process.env.SUPABASE_URL;
@@ -9,12 +10,13 @@ if (!supabaseUrl || !supabaseServiceRoleKey) {
   );
 }
 
-// Service role client — bypasses RLS for server-side operations.
-// NEVER expose this key to the frontend.
 const supabase = createClient(supabaseUrl, supabaseServiceRoleKey, {
   auth: {
     autoRefreshToken: false,
     persistSession: false,
+  },
+  realtime: {
+    transport: ws,
   },
 });
 
