@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { T } from "../constants/translations.js";
-import { VALID_CATEGORIES, CAT_ICONS } from "../constants/categories.js";
+import { VALID_CATEGORIES, CAT_ICONS, VALID_INCOME_CATEGORIES, INCOME_CAT_ICONS } from "../constants/categories.js";
 import { todayWIB } from "../utils/format.js";
 
 export default function TxModal({ onSave, onClose, defaultType = "expense", lang = "en" }) {
@@ -10,10 +10,15 @@ export default function TxModal({ onSave, onClose, defaultType = "expense", lang
     amount:      "",
     date:        todayWIB(),
     description: "",
-    category:    VALID_CATEGORIES[0],
+    category:    defaultType === "income" ? VALID_INCOME_CATEGORIES[0] : VALID_CATEGORIES[0],
   });
 
   const upd      = (k, v) => setForm((p) => ({ ...p, [k]: v }));
+  const handleTypeChange = (type) => setForm((p) => ({
+    ...p,
+    type,
+    category: type === "income" ? VALID_INCOME_CATEGORIES[0] : VALID_CATEGORIES[0],
+  }));
   const isIncome = form.type === "income";
 
   const handleSave = () => {
@@ -23,7 +28,7 @@ export default function TxModal({ onSave, onClose, defaultType = "expense", lang
       amount:      Number(form.amount),
       date:        form.date,
       description: form.description || null,
-      category:    isIncome ? null : form.category,
+      category:    form.category,
     });
     onClose();
   };
@@ -37,7 +42,7 @@ export default function TxModal({ onSave, onClose, defaultType = "expense", lang
           {["income", "expense"].map((type) => (
             <button
               key={type}
-              onClick={() => upd("type", type)}
+              onClick={() => handleTypeChange(type)}
               className={`tx-modal-toggle-button${form.type === type ? " active" : ""}`}
             >
               {type === "income" ? t.transactionTypeIncome : t.transactionTypeExpense}
@@ -65,17 +70,17 @@ export default function TxModal({ onSave, onClose, defaultType = "expense", lang
           className="tx-modal-input"
         />
 
-        {!isIncome && (
-          <select
-            value={form.category}
-            onChange={(e) => upd("category", e.target.value)}
-            className="tx-modal-input"
-          >
-            {VALID_CATEGORIES.map((c) => (
-              <option key={c} value={c}>{CAT_ICONS[c]} {c}</option>
-            ))}
-          </select>
-        )}
+        <select
+          value={form.category}
+          onChange={(e) => upd("category", e.target.value)}
+          className="tx-modal-input"
+        >
+          {(isIncome ? VALID_INCOME_CATEGORIES : VALID_CATEGORIES).map((c) => (
+            <option key={c} value={c}>
+              {isIncome ? INCOME_CAT_ICONS[c] : CAT_ICONS[c]} {c}
+            </option>
+          ))}
+        </select>
 
         <div className="tx-modal-actions">
           <button className="tx-modal-button cancel" onClick={onClose}>{t.cancelBtn}</button>
