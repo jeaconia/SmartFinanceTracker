@@ -59,11 +59,12 @@ class PredictionRequest(BaseModel):
 # ============================================================
 
 def status_risiko(x):
-    if x < 75:
+    persen = x * 100  # 1.26 → 126
+    if persen < 75:
         return "Aman"
-    elif x < 100:
+    elif persen < 100:
         return "Perlu Dipantau"
-    elif x < 150:
+    elif persen < 150:
         return "Waspada Overspending"
     else:
         return "Kritis"
