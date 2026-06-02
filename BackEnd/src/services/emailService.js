@@ -1,21 +1,6 @@
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 
-// ─── Transporter ──────────────────────────────────────────────────────────────
-// Initialised once at module load. All env vars are read from .env via dotenv.
-const transporter = nodemailer.createTransport({
-  host: process.env.EMAIL_HOST,
-  port: Number(process.env.EMAIL_PORT) || 587,
-  secure: Number(process.env.EMAIL_PORT) === 465, // true for port 465 (SSL), false for STARTTLS
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-});
-
-// Verify connection on startup (non-fatal — logs warning only so server still boots)
-transporter.verify().catch((err) => {
-  console.warn('[emailService] SMTP connection check failed:', err.message);
-});
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 // ─── Currency formatter ───────────────────────────────────────────────────────
 function formatRupiah(amount) {
@@ -64,79 +49,45 @@ function wrapHtml(title, bodyContent) {
 }
 
 // ─── sendEmail ────────────────────────────────────────────────────────────────
-/**
- * Low-level send helper. Used by higher-level functions below.
- * @param {string} to        Recipient email address
- * @param {string} subject   Email subject
- * @param {string} htmlBody  Full HTML string
- */
 async function sendEmail(to, subject, htmlBody) {
-  const info = await transporter.sendMail({
-    from: process.env.EMAIL_FROM || `"Finance Tracker" <${process.env.EMAIL_USER}>`,
+  const { data, error } = await resend.emails.send({
+    from: process.env.EMAIL_FROM || 'Finance Tracker <onboarding@resend.dev>',
     to,
     subject,
     html: htmlBody,
   });
-  console.log(`[emailService] Sent "${subject}" → ${to} (messageId: ${info.messageId})`);
-  return info;
+
+  if (error) {
+    throw new Error(`[emailService] Failed to send email: ${error.message}`);
+  }
+
+  console.log(`[emailService] Sent "${subject}" → ${to} (id: ${data.id})`);
+  return data;
 }
 
 // ─── sendOverbudgetEmail ──────────────────────────────────────────────────────
-/**
- * Notify a user that they have exceeded a budget for a category.
- *
- * @param {string} userEmail
- * @param {string} userName
- * @param {string} category    e.g. "Belanja"
- * @param {number} used        Amount already spent (IDR)
- * @param {number} limit       Budget limit (IDR)
- * @param {string} month       Budget month label e.g. "Juni 2025"
- */
 async function sendOverbudgetEmail(userEmail, userName, category, used, limit, month) {
   const subject = `[Finance Tracker] Peringatan: Anggaran ${category} Terlampaui`;
-
   const percentageUsed = limit > 0 ? Math.round((used / limit) * 100) : 0;
   const overAmount = used - limit;
 
   const body = wrapHtml(subject, `
     <div class="header">⚠️ Anggaran Terlampaui</div>
     <div class="subheader">Pemberitahuan otomatis untuk bulan ${month}</div>
-
     <p style="font-size:15px;">Halo <strong>${userName}</strong>,</p>
     <p style="font-size:14px; color:#374151;">
       Pengeluaran kamu untuk kategori <strong>${category}</strong> pada bulan
       <strong>${month}</strong> telah <strong style="color:#dc2626;">melampaui anggaran</strong> yang telah ditetapkan.
     </p>
-
     <div class="alert-box">
       🚨 Kamu sudah menggunakan <strong>${percentageUsed}%</strong> dari anggaran ${category} dan melebihi batas sebesar <strong>${formatRupiah(overAmount)}</strong>.
     </div>
-
-    <div class="info-row">
-      <span class="label">Kategori</span>
-      <span class="value">${category}</span>
-    </div>
-    <div class="info-row">
-      <span class="label">Batas Anggaran</span>
-      <span class="value">${formatRupiah(limit)}</span>
-    </div>
-    <div class="info-row">
-      <span class="label">Total Terpakai</span>
-      <span class="value danger">${formatRupiah(used)}</span>
-    </div>
-    <div class="info-row">
-      <span class="label">Kelebihan</span>
-      <span class="value danger">+ ${formatRupiah(overAmount)}</span>
-    </div>
-    <div class="info-row">
-      <span class="label">Persentase Penggunaan</span>
-      <span class="value danger">${percentageUsed}%</span>
-    </div>
-    <div class="info-row">
-      <span class="label">Bulan</span>
-      <span class="value">${month}</span>
-    </div>
-
+    <div class="info-row"><span class="label">Kategori</span><span class="value">${category}</span></div>
+    <div class="info-row"><span class="label">Batas Anggaran</span><span class="value">${formatRupiah(limit)}</span></div>
+    <div class="info-row"><span class="label">Total Terpakai</span><span class="value danger">${formatRupiah(used)}</span></div>
+    <div class="info-row"><span class="label">Kelebihan</span><span class="value danger">+ ${formatRupiah(overAmount)}</span></div>
+    <div class="info-row"><span class="label">Persentase Penggunaan</span><span class="value danger">${percentageUsed}%</span></div>
+    <div class="info-row"><span class="label">Bulan</span><span class="value">${month}</span></div>
     <p style="font-size:13px; color:#6b7280; margin-top:20px;">
       Pertimbangkan untuk meninjau kembali pengeluaran kamu agar tetap sesuai dengan rencana keuangan.
     </p>
@@ -146,45 +97,23 @@ async function sendOverbudgetEmail(userEmail, userName, category, used, limit, m
 }
 
 // ─── sendRecurringReminderEmail ───────────────────────────────────────────────
-/**
- * Remind a user that a recurring expense is coming due.
- *
- * @param {string} userEmail
- * @param {string} userName
- * @param {string} recurringName  e.g. "Netflix"
- * @param {number} amount         IDR amount
- * @param {string} dueDate        Human-readable date string e.g. "15 Juni 2025"
- */
 async function sendRecurringReminderEmail(userEmail, userName, recurringName, amount, dueDate) {
   const subject = `[Finance Tracker] Pengingat: ${recurringName} jatuh tempo ${dueDate}`;
 
   const body = wrapHtml(subject, `
     <div class="header">🔔 Pengingat Tagihan Rutin</div>
     <div class="subheader">Tagihan kamu akan segera jatuh tempo</div>
-
     <p style="font-size:15px;">Halo <strong>${userName}</strong>,</p>
     <p style="font-size:14px; color:#374151;">
       Ini adalah pengingat bahwa tagihan rutin kamu <strong>${recurringName}</strong>
       akan <strong>jatuh tempo pada ${dueDate}</strong>. Pastikan saldo kamu mencukupi.
     </p>
-
     <div class="reminder-box">
       📅 Siapkan pembayaran sebesar <strong>${formatRupiah(amount)}</strong> sebelum tanggal jatuh tempo.
     </div>
-
-    <div class="info-row">
-      <span class="label">Nama Tagihan</span>
-      <span class="value">${recurringName}</span>
-    </div>
-    <div class="info-row">
-      <span class="label">Jumlah</span>
-      <span class="value warning">${formatRupiah(amount)}</span>
-    </div>
-    <div class="info-row">
-      <span class="label">Tanggal Jatuh Tempo</span>
-      <span class="value">${dueDate}</span>
-    </div>
-
+    <div class="info-row"><span class="label">Nama Tagihan</span><span class="value">${recurringName}</span></div>
+    <div class="info-row"><span class="label">Jumlah</span><span class="value warning">${formatRupiah(amount)}</span></div>
+    <div class="info-row"><span class="label">Tanggal Jatuh Tempo</span><span class="value">${dueDate}</span></div>
     <p style="font-size:13px; color:#6b7280; margin-top:20px;">
       Kamu menerima email ini karena tagihan ini terdaftar sebagai pengeluaran rutin di Finance Tracker.
     </p>
