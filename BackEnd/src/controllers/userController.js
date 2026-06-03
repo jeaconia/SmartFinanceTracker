@@ -11,6 +11,25 @@ const supabase     = require('../config/supabase');
 const aiService    = require('../services/aiService');
 const { validateRequired } = require('../utils/validate');
 
+// Tambahkan di bagian atas file, setelah require statements:
+
+const CITY_UMR = {
+  Jakarta: 5441000, Surabaya: 4525000, Bandung: 4209000, Medan: 3800000,
+  Semarang: 3243000, Makassar: 3800000, Palembang: 3600000, Tangerang: 4700000,
+  Depok: 4700000, Bekasi: 5500000, Bogor: 4639000, Yogyakarta: 2300000,
+  Solo: 2300000, Malang: 3294000, Denpasar: 3000000, Balikpapan: 3300000,
+  Samarinda: 3200000, Banjarmasin: 3150000, Pekanbaru: 3500000, Batam: 4500000,
+  Padang: 2800000, Manado: 3700000, Pontianak: 2900000, Jayapura: 4000000,
+  Kupang: 2200000, Ambon: 3200000, Mataram: 2450000, 'Bandar Lampung': 2800000,
+  Jambi: 3000000, Bengkulu: 2500000, Palangkaraya: 3300000, Kendari: 3000000,
+  Palu: 2800000, Gorontalo: 2800000, Ternate: 3200000, Sorong: 4000000,
+  Cirebon: 2500000, Serang: 2700000, Cilegon: 4500000, Sukabumi: 2500000,
+  Tasikmalaya: 2100000, Purwokerto: 2000000, Magelang: 2100000, Kediri: 2200000,
+  Blitar: 2000000, Madiun: 2000000, Probolinggo: 2100000, Mojokerto: 2300000,
+  Jember: 2400000, Banyuwangi: 2400000, 'Pare-pare': 2800000, Bitung: 3500000,
+  Tomohon: 3000000, Tarakan: 3500000, Bontang: 3500000,
+};
+
 // Columns the client is allowed to set. Any other key in req.body is ignored.
 const UPDATABLE_FIELDS = ['name', 'city', 'province', 'umr_value', 'notif_enabled', 'currency'];
 
@@ -108,7 +127,15 @@ async function updateProfile(req, res) {
     .select('city, umr_value')
     .eq('id', userId)
     .maybeSingle();
-
+  
+  // Auto-assign umr_value dari CITY_KB jika city diubah dan user tidak eksplisit kirim umr_value
+  if ('city' in updates && !('umr_value' in updates)) {
+    const cityUmr = CITY_UMR[updates.city];
+    if (cityUmr) {
+      updates.umr_value = cityUmr;
+    }
+  }
+ 
   // Upsert — creates the row if it doesn't exist yet
   const { data, error } = await supabase
     .from('users')

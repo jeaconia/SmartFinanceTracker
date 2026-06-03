@@ -1,89 +1,353 @@
 const supabase = require('../config/supabase');
 
-// ─── Constants ────────────────────────────────────────────────────────────────
-
-// Fixed budget allocation ratios per category.
-// The remaining 0.20 is a savings buffer and is intentionally NOT returned.
-const BUDGET_RATIOS = {
-  Belanja:          0.40,
-  Kesehatan:        0.10,
-  Hiburan:          0.15,
-  Sosial:           0.10,
-  'Hewan Peliharaan': 0.05,
+// ─── CITY_KB (dari fitur3_autobudgeting_cityaware.py) ─────────────────────────
+const CITY_KB = {
+  Jakarta:          { umr: 5441000, avg_kos: 2500000, transport_factor: 1.30, makanan_factor: 1.20 },
+  Surabaya:         { umr: 4525000, avg_kos: 1800000, transport_factor: 1.10, makanan_factor: 1.00 },
+  Bandung:          { umr: 4209000, avg_kos: 1500000, transport_factor: 1.00, makanan_factor: 0.95 },
+  Medan:            { umr: 3800000, avg_kos: 1200000, transport_factor: 1.00, makanan_factor: 0.95 },
+  Semarang:         { umr: 3243000, avg_kos: 1200000, transport_factor: 0.90, makanan_factor: 0.85 },
+  Makassar:         { umr: 3800000, avg_kos: 1300000, transport_factor: 1.00, makanan_factor: 0.90 },
+  Palembang:        { umr: 3600000, avg_kos: 1100000, transport_factor: 0.90, makanan_factor: 0.88 },
+  Tangerang:        { umr: 4700000, avg_kos: 2000000, transport_factor: 1.20, makanan_factor: 1.10 },
+  Depok:            { umr: 4700000, avg_kos: 1900000, transport_factor: 1.20, makanan_factor: 1.05 },
+  Bekasi:           { umr: 5500000, avg_kos: 2000000, transport_factor: 1.25, makanan_factor: 1.10 },
+  Bogor:            { umr: 4639000, avg_kos: 1500000, transport_factor: 1.00, makanan_factor: 0.95 },
+  Yogyakarta:       { umr: 2300000, avg_kos:  900000, transport_factor: 0.85, makanan_factor: 0.80 },
+  Solo:             { umr: 2300000, avg_kos:  900000, transport_factor: 0.85, makanan_factor: 0.80 },
+  Malang:           { umr: 3294000, avg_kos: 1100000, transport_factor: 0.90, makanan_factor: 0.85 },
+  Denpasar:         { umr: 3000000, avg_kos: 1600000, transport_factor: 1.00, makanan_factor: 1.00 },
+  Balikpapan:       { umr: 3300000, avg_kos: 1400000, transport_factor: 1.10, makanan_factor: 1.10 },
+  Samarinda:        { umr: 3200000, avg_kos: 1300000, transport_factor: 1.00, makanan_factor: 1.00 },
+  Banjarmasin:      { umr: 3150000, avg_kos: 1200000, transport_factor: 0.95, makanan_factor: 0.95 },
+  Pekanbaru:        { umr: 3500000, avg_kos: 1300000, transport_factor: 1.00, makanan_factor: 1.00 },
+  Batam:            { umr: 4500000, avg_kos: 1600000, transport_factor: 1.10, makanan_factor: 1.10 },
+  Padang:           { umr: 2800000, avg_kos: 1000000, transport_factor: 0.90, makanan_factor: 0.85 },
+  Manado:           { umr: 3700000, avg_kos: 1200000, transport_factor: 1.00, makanan_factor: 1.05 },
+  Pontianak:        { umr: 2900000, avg_kos: 1100000, transport_factor: 0.95, makanan_factor: 0.95 },
+  Jayapura:         { umr: 4000000, avg_kos: 1800000, transport_factor: 1.30, makanan_factor: 1.40 },
+  Kupang:           { umr: 2200000, avg_kos:  900000, transport_factor: 1.00, makanan_factor: 1.00 },
+  Ambon:            { umr: 3200000, avg_kos: 1100000, transport_factor: 1.10, makanan_factor: 1.10 },
+  Mataram:          { umr: 2450000, avg_kos:  900000, transport_factor: 0.90, makanan_factor: 0.88 },
+  'Bandar Lampung': { umr: 2800000, avg_kos: 1000000, transport_factor: 0.90, makanan_factor: 0.88 },
+  Jambi:            { umr: 3000000, avg_kos: 1000000, transport_factor: 0.90, makanan_factor: 0.90 },
+  Bengkulu:         { umr: 2500000, avg_kos:  900000, transport_factor: 0.90, makanan_factor: 0.88 },
+  Palangkaraya:     { umr: 3300000, avg_kos: 1200000, transport_factor: 1.00, makanan_factor: 1.00 },
+  Kendari:          { umr: 3000000, avg_kos: 1100000, transport_factor: 1.00, makanan_factor: 1.00 },
+  Palu:             { umr: 2800000, avg_kos: 1000000, transport_factor: 1.00, makanan_factor: 0.95 },
+  Gorontalo:        { umr: 2800000, avg_kos: 1000000, transport_factor: 1.00, makanan_factor: 0.95 },
+  Ternate:          { umr: 3200000, avg_kos: 1100000, transport_factor: 1.10, makanan_factor: 1.10 },
+  Sorong:           { umr: 4000000, avg_kos: 1600000, transport_factor: 1.20, makanan_factor: 1.30 },
+  Cirebon:          { umr: 2500000, avg_kos: 1000000, transport_factor: 0.90, makanan_factor: 0.85 },
+  Serang:           { umr: 2700000, avg_kos: 1100000, transport_factor: 0.95, makanan_factor: 0.90 },
+  Cilegon:          { umr: 4500000, avg_kos: 1500000, transport_factor: 1.00, makanan_factor: 1.00 },
+  Sukabumi:         { umr: 2500000, avg_kos:  900000, transport_factor: 0.90, makanan_factor: 0.85 },
+  Tasikmalaya:      { umr: 2100000, avg_kos:  800000, transport_factor: 0.85, makanan_factor: 0.82 },
+  Purwokerto:       { umr: 2000000, avg_kos:  800000, transport_factor: 0.85, makanan_factor: 0.80 },
+  Magelang:         { umr: 2100000, avg_kos:  800000, transport_factor: 0.85, makanan_factor: 0.82 },
+  Kediri:           { umr: 2200000, avg_kos:  850000, transport_factor: 0.85, makanan_factor: 0.83 },
+  Blitar:           { umr: 2000000, avg_kos:  800000, transport_factor: 0.85, makanan_factor: 0.82 },
+  Madiun:           { umr: 2000000, avg_kos:  800000, transport_factor: 0.85, makanan_factor: 0.82 },
+  Probolinggo:      { umr: 2100000, avg_kos:  850000, transport_factor: 0.88, makanan_factor: 0.85 },
+  Mojokerto:        { umr: 2300000, avg_kos:  900000, transport_factor: 0.90, makanan_factor: 0.85 },
+  Jember:           { umr: 2400000, avg_kos:  900000, transport_factor: 0.90, makanan_factor: 0.85 },
+  Banyuwangi:       { umr: 2400000, avg_kos:  900000, transport_factor: 0.90, makanan_factor: 0.85 },
+  'Pare-pare':      { umr: 2800000, avg_kos: 1000000, transport_factor: 0.95, makanan_factor: 0.90 },
+  Bitung:           { umr: 3500000, avg_kos: 1100000, transport_factor: 1.00, makanan_factor: 1.00 },
+  Tomohon:          { umr: 3000000, avg_kos: 1000000, transport_factor: 0.95, makanan_factor: 0.95 },
+  Tarakan:          { umr: 3500000, avg_kos: 1400000, transport_factor: 1.10, makanan_factor: 1.15 },
+  Bontang:          { umr: 3500000, avg_kos: 1300000, transport_factor: 1.05, makanan_factor: 1.05 },
 };
+const CITY_KB_DEFAULT = { umr: 3000000, avg_kos: 1200000, transport_factor: 1.0, makanan_factor: 1.0 };
 
-const AI_SERVICE_URL = process.env.AI_SERVICE_URL;
+// ─── Kategori → bucket 50/30/20 ───────────────────────────────────────────────
+const KEBUTUHAN = [
+  'Makanan & Minuman', 'Makanan', 'Perumahan', 'Kost', 'Transportasi',
+  'Tagihan Tetap', 'Tagihan', 'Kesehatan', 'Pendidikan',
+];
+const TABUNGAN = ['Investasi', 'Tabungan', 'Investasi/Tabungan'];
 
-// ─── getBudgetRecommendation ──────────────────────────────────────────────────
+function getBucket(cat) {
+  if (KEBUTUHAN.includes(cat)) return 'kebutuhan';
+  if (TABUNGAN.includes(cat))  return 'tabungan';
+  return 'keinginan';
+}
+
+function getCityInfo(city) {
+  return CITY_KB[city] ?? CITY_KB_DEFAULT;
+}
+
+// ─── Layer 1: Rule-based 50/30/20 engine ──────────────────────────────────────
+function computeRuleBasedBudget(pendapatan, tagihaTetap, categoryRatio) {
+  const disposable = pendapatan - tagihaTetap;
+  const pctTagihan = pendapatan > 0 ? tagihaTetap / pendapatan : 0;
+  const flags      = [];
+
+  if (pctTagihan > 0.50) flags.push('TAGIHAN_TINGGI: tagihan melebihi 50% pendapatan');
+
+  let kebutuhanPct = 0.50;
+  let keinginanPct = 0.30;
+  let tabunganPct  = 0.20;
+
+  if (pctTagihan > 0.50) {
+    keinginanPct = Math.max(0.05, keinginanPct - (pctTagihan - 0.50));
+    tabunganPct  = Math.max(0.05, 1 - kebutuhanPct - keinginanPct);
+  }
+  if (tabunganPct < 0.10) {
+    keinginanPct = Math.max(0.05, keinginanPct - (0.10 - tabunganPct));
+    tabunganPct  = 0.10;
+    flags.push('TABUNGAN_RENDAH: disesuaikan ke 10%');
+  }
+
+  const alokasiKebutuhan = disposable * kebutuhanPct;
+  const alokasiKeinginan = disposable * keinginanPct;
+  const alokasiTabungan  = disposable * tabunganPct;
+
+  // Distribusi ke sub-kategori berdasarkan bobot historis
+  const alokasi = {};
+  const bucketWeights = { kebutuhan: {}, keinginan: {}, tabungan: {} };
+
+  for (const [cat, w] of Object.entries(categoryRatio)) {
+    bucketWeights[getBucket(cat)][cat] = w;
+  }
+
+  const bucketMap = [
+    ['kebutuhan', alokasiKebutuhan, ['Makanan & Minuman', 'Perumahan', 'Transportasi']],
+    ['keinginan', alokasiKeinginan, ['Hiburan', 'Belanja']],
+    ['tabungan',  alokasiTabungan,  ['Tabungan']],
+  ];
+
+  for (const [bucket, totalAlloc, fallbackCats] of bucketMap) {
+    const weights = bucketWeights[bucket];
+    const sum     = Object.values(weights).reduce((s, v) => s + v, 0);
+
+    if (sum === 0) {
+      // Fallback: bagi rata ke default kategori bucket
+      const share = totalAlloc / fallbackCats.length;
+      for (const c of fallbackCats) alokasi[c] = Math.round((alokasi[c] ?? 0) + share);
+    } else {
+      for (const [cat, w] of Object.entries(weights)) {
+        alokasi[cat] = Math.round(totalAlloc * (w / sum));
+      }
+    }
+  }
+
+  return {
+    disposable,
+    flags,
+    kebutuhan: Math.round(alokasiKebutuhan),
+    keinginan: Math.round(alokasiKeinginan),
+    tabungan:  Math.round(alokasiTabungan),
+    kebutuhanPct,
+    keinginanPct,
+    tabunganPct,
+    alokasi_per_kategori: alokasi,
+  };
+}
+
+// ─── Derive persona dari expense_to_income_ratio ──────────────────────────────
+function derivePersona(ratio) {
+  const pct = (ratio ?? 0) * 100;
+  if (pct < 75)  return 'Aman';
+  if (pct < 100) return 'Perlu Dipantau';
+  if (pct < 150) return 'Waspada Overspending';
+  return 'Kritis';
+}
+
+// ─── Layer 4: Build LLM prompt (identik dengan notebook) ─────────────────────
+function buildLlmPrompt({ pendapatan, kota, persona, l1, prediksiPct, cityInfo }) {
+  const bracket =
+    pendapatan < 3e6  ? '< 3jt'  :
+    pendapatan < 5e6  ? '3–5jt'  :
+    pendapatan < 8e6  ? '5–8jt'  :
+    pendapatan < 15e6 ? '8–15jt' : '> 15jt';
+
+  const top3 = Object.entries(l1.alokasi_per_kategori)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3)
+    .map(([k, v]) => `  • ${k}: ${((v / pendapatan) * 100).toFixed(1)}%`)
+    .join('\n');
+
+  const systemPrompt =
+    'Kamu adalah financial planner Indonesia yang memahami konteks lokal tiap kota. ' +
+    'Gunakan bahasa Indonesia yang ramah, tidak menghakimi, dan mudah dipahami oleh kalangan umum. ' +
+    'Berikan saran yang actionable dan spesifik untuk kota user.';
+
+  const userPrompt = `Synthesize rekomendasi budget berikut menjadi laporan personal:
+
+DATA USER:
+- Bracket pendapatan : ${bracket}
+- Kota               : ${kota}
+- Persona finansial  : ${persona}
+- UMR kota           : Rp${cityInfo.umr.toLocaleString('id-ID')}
+- Rata-rata kos      : Rp${cityInfo.avg_kos.toLocaleString('id-ID')}
+- Transportasi mahal : ${cityInfo.transport_factor > 1.0 ? 'Ya' : 'Tidak'}
+- Makanan mahal      : ${cityInfo.makanan_factor > 1.0 ? 'Ya' : 'Tidak'}
+
+ALOKASI BUDGET (REKOMENDASI):
+- Kebutuhan  : ${(l1.kebutuhanPct * 100).toFixed(0)}% dari pendapatan
+- Keinginan  : ${(l1.keinginanPct * 100).toFixed(0)}% dari pendapatan
+- Tabungan   : ${(l1.tabunganPct  * 100).toFixed(0)}% dari pendapatan
+- Top 3 kategori terbesar:
+${top3}
+${prediksiPct != null ? `\nPREDIKSI BULAN DEPAN: ${prediksiPct}% dari pendapatan` : ''}
+${l1.flags.length   ? `\nPERINGATAN: ${l1.flags.join('; ')}` : ''}
+
+OUTPUT YANG DIINGINKAN (balas dengan JSON saja, tanpa teks atau markdown di luar JSON):
+{
+  "analisis": "<3 kalimat kondisi keuangan>",
+  "tabel_budget": [{ "kategori": "...", "alokasi_pct": "...", "tips": "..." }],
+  "tips_lokal": ["<tips spesifik kota 1>", "<tips spesifik kota 2>"],
+  "proyeksi": "<narasi proyeksi jika budget diikuti>"
+}
+
+PENTING: Jangan sebut nilai Rp mentah. Gunakan persentase dan bahasa kontekstual.`;
+
+  return { systemPrompt, userPrompt };
+}
+
+// ─── getBudgetRecommendation ───────────────────────────────────────────────────
 /**
- * Pure rule-based budget recommendation — no external API call.
- *
- * Logic:
- *  1. Fetch user's city + umr_value from users table.
- *  2. Fetch avg_3month_expense from the most recent monthly_analytics row.
- *  3. base = (umr_value <= 0 || null) ? avg_3month_expense : MAX(umr_value, avg_3month_expense)
- *  4. Multiply base by each category's fixed ratio.
+ * Full Fitur 3 pipeline:
+ *   Layer 1 : Rule-based 50/30/20 (dari data historis user)
+ *   Layer 4 : LLM Claude narasi city-aware (non-fatal jika API key tidak ada)
  *
  * @param {string} userId
- * @returns {{ recommendations, based_on_city, based_on_umr, base_amount }}
+ * @returns {{ recommendations, bucket_summary, flags, persona, based_on_city,
+ *             based_on_umr, base_amount, llm_narasi }}
  */
 async function getBudgetRecommendation(userId) {
-  // ── 1. User profile ─────────────────────────────────────────────────────────
-  const { data: userRow, error: userError } = await supabase
+  // ── 1. Fetch user profile ─────────────────────────────────────────────────
+  const { data: userRow, error: userErr } = await supabase
     .from('users')
     .select('city, umr_value')
     .eq('id', userId)
     .maybeSingle();
+  if (userErr) throw new Error(`Failed to fetch user: ${userErr.message}`);
 
-  if (userError) throw new Error(`Failed to fetch user profile: ${userError.message}`);
+  const city     = userRow?.city ?? null;
+  const cityInfo = getCityInfo(city);
 
-  const city      = userRow?.city      ?? null;
-  const umrValue  = userRow?.umr_value ?? 0;
-
-  // ── 2. Avg 3-month expense ───────────────────────────────────────────────────
-  const { data: analyticsRow, error: analyticsError } = await supabase
+  // ── 2. Fetch monthly_analytics (3 bulan terakhir) ────────────────────────
+  const { data: analytics, error: analyticsErr } = await supabase
     .from('monthly_analytics')
-    .select('avg_3month_expense')
+    .select('monthly_income, total_expense, avg_3month_expense, expense_to_income_ratio, category_ratio')
     .eq('user_id', userId)
     .order('month', { ascending: false })
-    .limit(1)
+    .limit(3);
+  if (analyticsErr) throw new Error(`Failed to fetch analytics: ${analyticsErr.message}`);
+
+  // ── 3. Fetch prediksi bulan depan dari Fitur 2 (opsional) ─────────────────
+  const nextMonthStr = (() => {
+    const d = new Date();
+    d.setMonth(d.getMonth() + 1);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+  })();
+  const { data: aiRow } = await supabase
+    .from('ai_results')
+    .select('predicted_total_expense')
+    .eq('user_id', userId)
+    .eq('month', nextMonthStr)
     .maybeSingle();
 
-  if (analyticsError) throw new Error(`Failed to fetch analytics: ${analyticsError.message}`);
+  // ── 4. Tentukan pendapatan & tagihan ──────────────────────────────────────
+  const latest      = analytics?.[0] ?? null;
+  const pendapatan  = latest?.monthly_income
+    ?? userRow?.umr_value
+    ?? cityInfo.umr;
+  // Tagihan tetap: gunakan avg_kos sebagai proxy, maksimal 35% pendapatan
+  const tagihaTetap = Math.min(cityInfo.avg_kos, pendapatan * 0.35);
 
-  const avg3Month = analyticsRow?.avg_3month_expense ?? 0;
-
-  // ── 3. Determine base amount ─────────────────────────────────────────────────
-  // If UMR is absent or zero, fall back entirely to spending history.
-  // Otherwise take the higher of the two so recommendations are never below UMR.
-  const validUmr = umrValue && umrValue > 0;
-  const baseAmount = validUmr
-    ? Math.max(umrValue, avg3Month)
-    : avg3Month;
-
-  // ── 4. Apply ratios ──────────────────────────────────────────────────────────
-  const recommendations = {};
-  for (const [category, ratio] of Object.entries(BUDGET_RATIOS)) {
-    recommendations[category] = Math.round(baseAmount * ratio);
+  // ── 5. Build category_ratio dari JSONB history ────────────────────────────
+  // Rata-rata category_ratio dari beberapa bulan terakhir
+  const categoryRatio = {};
+  const rows = analytics ?? [];
+  for (const row of rows) {
+    for (const [cat, val] of Object.entries(row.category_ratio ?? {})) {
+      categoryRatio[cat] = (categoryRatio[cat] ?? 0) + Number(val);
+    }
+  }
+  const nRows = rows.length || 1;
+  for (const cat of Object.keys(categoryRatio)) {
+    categoryRatio[cat] /= nRows;
   }
 
+  // ── 6. Layer 1: Rule-based budget ────────────────────────────────────────
+  const persona = derivePersona(latest?.expense_to_income_ratio);
+  const l1      = computeRuleBasedBudget(pendapatan, tagihaTetap, categoryRatio);
+
+  // ── 7. Layer 4: LLM Claude (non-fatal) ───────────────────────────────────
+  const prediksiPct      = aiRow?.predicted_total_expense ?? null;
+  let   llmNarasi        = null;
+
+  const anthropicKey = process.env.ANTHROPIC_API_KEY;
+  if (anthropicKey) {
+    try {
+      const { systemPrompt, userPrompt } = buildLlmPrompt({
+        pendapatan,
+        kota: city ?? 'Indonesia',
+        persona,
+        l1,
+        prediksiPct,
+        cityInfo,
+      });
+
+      const controller = new AbortController();
+      const timeout    = setTimeout(() => controller.abort(), 15_000);
+
+      const resp = await fetch('https://api.anthropic.com/v1/messages', {
+        method:  'POST',
+        signal:  controller.signal,
+        headers: {
+          'Content-Type':      'application/json',
+          'x-api-key':         anthropicKey,
+          'anthropic-version': '2023-06-01',
+        },
+        body: JSON.stringify({
+          model:      'claude-haiku-4-5-20251001',
+          max_tokens: 1024,
+          system:     systemPrompt,
+          messages:   [{ role: 'user', content: userPrompt }],
+        }),
+      });
+      clearTimeout(timeout);
+
+      if (resp.ok) {
+        const json = await resp.json();
+        const raw  = json?.content?.[0]?.text ?? '';
+        try {
+          llmNarasi = JSON.parse(raw.replace(/```json|```/g, '').trim());
+        } catch {
+          llmNarasi = raw; // fallback: simpan sebagai plain text
+        }
+      } else {
+        console.warn(`[getBudgetRecommendation] LLM returned HTTP ${resp.status}`);
+      }
+    } catch (llmErr) {
+      // Non-fatal: budget tetap dikembalikan tanpa narasi
+      console.warn('[getBudgetRecommendation] LLM call failed (non-fatal):', llmErr.message);
+    }
+  }
+
+  // ── 8. Return ─────────────────────────────────────────────────────────────
   return {
-    recommendations,
-    based_on_city: city,
-    based_on_umr: validUmr ? umrValue : null,
-    base_amount: Math.round(baseAmount),
+    recommendations: l1.alokasi_per_kategori,
+    bucket_summary: {
+      kebutuhan_pct: `${(l1.kebutuhanPct * 100).toFixed(0)}%`,
+      keinginan_pct: `${(l1.keinginanPct * 100).toFixed(0)}%`,
+      tabungan_pct:  `${(l1.tabunganPct  * 100).toFixed(0)}%`,
+      disposable:    Math.round(l1.disposable),
+    },
+    flags:           l1.flags,
+    persona,
+    based_on_city:   city,
+    based_on_umr:    cityInfo.umr,
+    base_amount:     Math.round(pendapatan),
+    llm_narasi:      llmNarasi,
   };
 }
 
 // ─── getSpendingLabel ─────────────────────────────────────────────────────────
-/**
- * Delegates to external FastAPI service.
- * POST {AI_SERVICE_URL}/classify  →  { spending_label, label_confidence, label_traits, ... }
- *
- * @param {string} userId
- * @param {string} month  'YYYY-MM'
- * @returns {object} Raw response from the AI service
- */
 async function getSpendingLabel(userId, month) {
   if (!AI_SERVICE_URL) {
     throw new Error('AI_SERVICE_URL is not configured in environment variables');
@@ -92,9 +356,9 @@ async function getSpendingLabel(userId, month) {
   let response;
   try {
     response = await fetch(`${AI_SERVICE_URL}/classify`, {
-      method: 'POST',
+      method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ user_id: userId, month }),
+      body:    JSON.stringify({ user_id: userId, month }),
     });
   } catch (networkErr) {
     throw new Error(`AI service unreachable: ${networkErr.message}`);
@@ -109,20 +373,11 @@ async function getSpendingLabel(userId, month) {
 }
 
 // ─── predictNextMonthExpense ──────────────────────────────────────────────────
-/**
- * Fetches 3 months of historical data from monthly_analytics, assembles
- * a (3, 12) feature matrix, then calls APIFITUR2 FastAPI /predict.
- *
- * @param {string} userId
- * @returns {object} Raw response from the AI service
- */
 async function predictNextMonthExpense(userId) {
-  // ── GUARD 1: env var wajib ada ────────────────────────────────────────────
   if (!AI_SERVICE_URL) {
     throw new Error('AI_SERVICE_URL is not configured in environment variables');
   }
 
-  // ── 1. Fetch 4 baris (3 untuk fitur + 1 ekstra untuk ratio_last baris pertama)
   const { data, error } = await supabase
     .from('monthly_analytics')
     .select('month, total_expense, transaction_count, avg_transaction_value, monthly_income, spending_growth_rate, last_month_expense, avg_3month_expense, expense_to_income_ratio')
@@ -135,32 +390,29 @@ async function predictNextMonthExpense(userId) {
     throw new Error('Tidak cukup data historis untuk prediksi (minimum 1 bulan)');
   }
 
-  // ── 2. Urutkan dari lama ke baru (reverse dari DESC) ──────────────────────
-  const rows       = [...data].reverse();
-  const workingRows = rows.length === 4 ? rows.slice(1) : rows; // maks 3 baris kerja
-  const extraRow    = rows.length === 4 ? rows[0] : null;       // untuk ratio_last baris pertama
+  const rows        = [...data].reverse();
+  const workingRows = rows.length === 4 ? rows.slice(1) : rows;
+  const extraRow    = rows.length === 4 ? rows[0] : null;
 
-  // ── 3. Helper: rakit satu baris fitur [12] ────────────────────────────────
   function buildRow(row, ratioLast) {
     const [yearStr, monthStr] = row.month.split('-');
     const isOverspending = (row.total_expense ?? 0) > (row.monthly_income ?? 0) ? 1 : 0;
     return [
-      parseInt(monthStr, 10),                // 1  bulan
-      parseInt(yearStr,  10),                // 2  tahun
-      row.total_expense           ?? 0,      // 3  total_expense
-      row.transaction_count       ?? 0,      // 4  transaction_count
-      row.avg_transaction_value   ?? 0,      // 5  avg_transaction_value
-      isOverspending,                        // 6  is_overspending
-      row.monthly_income          ?? 0,      // 7  monthly_income
-      row.spending_growth_rate    ?? 0,      // 8  spending_growth_rate
-      row.last_month_expense      ?? 0,      // 9  last_month_expense
-      row.avg_3month_expense      ?? 0,      // 10 avg_3month_expense
-      row.expense_to_income_ratio ?? 0,      // 11 ratio_current
-      ratioLast                   ?? 0,      // 12 ratio_last
+      parseInt(monthStr, 10),
+      parseInt(yearStr,  10),
+      row.total_expense           ?? 0,
+      row.transaction_count       ?? 0,
+      row.avg_transaction_value   ?? 0,
+      isOverspending,
+      row.monthly_income          ?? 0,
+      row.spending_growth_rate    ?? 0,
+      row.last_month_expense      ?? 0,
+      row.avg_3month_expense      ?? 0,
+      row.expense_to_income_ratio ?? 0,
+      ratioLast                   ?? 0,
     ];
   }
 
-  // ── 4. Rakit features[3][12], padding baris kosong di depan jika < 3 bulan
   const EMPTY_ROW = Array(12).fill(0);
   const features  = [];
 
@@ -170,23 +422,16 @@ async function predictNextMonthExpense(userId) {
     features.push(buildRow(workingRows[i], ratioLast));
   }
 
-  while (features.length < 3) {
-    features.unshift(EMPTY_ROW);
-  }
+  while (features.length < 3) features.unshift(EMPTY_ROW);
 
-  // ── GUARD 2: validasi shape (3, 12) dan tidak ada NaN ────────────────────
   if (
     features.length !== 3 ||
     features.some((row) => !Array.isArray(row) || row.length !== 12) ||
     features.some((row) => row.some((v) => typeof v !== 'number' || isNaN(v)))
   ) {
-    throw new Error(
-      `Invalid features shape: expected (3, 12) of numbers, ` +
-      `got (${features.length}, ${features[0]?.length ?? '?'})`
-    );
+    throw new Error(`Invalid features shape: expected (3, 12)`);
   }
 
-  // ── GUARD 3: timeout 10 detik ─────────────────────────────────────────────
   const controller = new AbortController();
   const timeoutId  = setTimeout(() => controller.abort(), 10_000);
 
@@ -207,24 +452,21 @@ async function predictNextMonthExpense(userId) {
     clearTimeout(timeoutId);
   }
 
-  // ── GUARD 4: HTTP status bukan 2xx ───────────────────────────────────────
   if (!response.ok) {
     const errText = await response.text().catch(() => '');
     throw new Error(`AI service returned ${response.status}: ${errText}`);
   }
 
-  // ── GUARD 5: validasi struktur JSON response ──────────────────────────────
   const result = await response.json();
 
   if (!result?.success || !Array.isArray(result?.predictions)) {
-    throw new Error(
-      `AI service response malformed: missing "success" or "predictions". ` +
-      `Got: ${JSON.stringify(result).slice(0, 200)}`
-    );
+    throw new Error(`AI service response malformed: ${JSON.stringify(result).slice(0, 200)}`);
   }
 
   return result;
 }
+
+const AI_SERVICE_URL = process.env.AI_SERVICE_URL;
 
 module.exports = {
   getBudgetRecommendation,
