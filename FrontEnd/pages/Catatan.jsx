@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import TxModal from "../components/TxModal.jsx";
 import * as API from "../services/api.js";
 import { T } from "../constants/translations.js";
-import { VALID_CATEGORIES, CAT_ICONS, VALID_FREQUENCIES } from "../constants/categories.js";
+import { VALID_CATEGORIES, CAT_ICONS, VALID_FREQUENCIES, VALID_INCOME_CATEGORIES, INCOME_CAT_ICONS } from "../constants/categories.js";
 import { currentMonthStr, fmt } from "../utils/format.js";
 
 export default function Catatan({ theme, lang = "en" }) {
@@ -113,7 +113,7 @@ export default function Catatan({ theme, lang = "en" }) {
             )}
             {txs.map((tx) => (
               <div key={tx.id} style={{ display:"flex", alignItems:"center", gap:10, padding:"11px 0", borderBottom:`1px solid ${theme.bdr}` }}>
-                <span style={{ fontSize:20 }}>{tx.type==="income"?"💼":CAT_ICONS[tx.category]||"💸"}</span>
+                <span style={{ fontSize:20 }}>{tx.type==="income"?(INCOME_CAT_ICONS[tx.category]||"💼"):CAT_ICONS[tx.category]||"💸"}</span>
                 <div style={{ flex:1 }}>
                   <div style={{ fontWeight:600, fontSize:13, color: theme.txt }}>{tx.description||"—"}</div>
                   <div style={{ fontSize:11, color: theme.sub, marginTop:2 }}>{tx.category || t.pemasukan} · {tx.date}{tx.is_recurring&&<span style={{ marginLeft:6, color:"#8BBB6A", fontWeight:600 }}>{t.recurringTag}</span>}</div>
