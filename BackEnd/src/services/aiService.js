@@ -330,8 +330,16 @@ async function getBudgetRecommendation(userId) {
   }
 
   // ── 8. Return ─────────────────────────────────────────────────────────────
+  // Convert alokasi_per_kategori { kategori: amount } → array yang diexpect frontend
+  // { category, recommended_limit, reason }
+  const recommendationsArray = Object.entries(l1.alokasi_per_kategori).map(([category, amount]) => ({
+    category,
+    recommended_limit: amount,
+    reason: llmNarasi?.tabel_budget?.find(t => t.kategori === category)?.tips ?? null,
+  }));
+
   return {
-    recommendations: l1.alokasi_per_kategori,
+    recommendations: recommendationsArray,
     bucket_summary: {
       kebutuhan_pct: `${(l1.kebutuhanPct * 100).toFixed(0)}%`,
       keinginan_pct: `${(l1.keinginanPct * 100).toFixed(0)}%`,

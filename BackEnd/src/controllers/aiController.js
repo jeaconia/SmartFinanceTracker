@@ -115,7 +115,7 @@ async function predictNextMonthExpense(req, res) {
     predicted_total_expense,
   });
 
-  return res.json({ success: true, data: result });
+  return res.json({ success: true, data: { ...result, predicted_total_expense } });
 }
 
 // ─── GET /api/ai/results?month=YYYY-MM ───────────────────────────────────────
