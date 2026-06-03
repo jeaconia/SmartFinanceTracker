@@ -210,7 +210,8 @@ PENTING: Jangan sebut nilai Rp mentah. Gunakan persentase dan bahasa kontekstual
 const { getAutoBudgetRecommendation } = require('./model2Service');
 
 async function getBudgetRecommendation(userId) {
-  const month = currentMonth();
+  const d = new Date();
+  const month = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
   return getAutoBudgetRecommendation(userId, month);
 }
 // ─── getSpendingLabel (Model 1 — Spending Persona Classifier) ─────────────────
