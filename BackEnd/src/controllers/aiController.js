@@ -104,10 +104,23 @@ async function predictNextMonthExpense(req, res) {
   }
 
   // ── Extract bulan_ke:1 as predicted_total_expense ─────────────────────────
+  // proporsi_terhadap_pendapatan adalah rasio terhadap pendapatan (misal 0.85 = 85%)
+  // perlu dikalikan pendapatan bulanan untuk dapat nilai Rupiah
   const predictions = result?.predictions ?? [];
   const bulan1      = predictions.find((p) => p.bulan_ke === 1);
-  const predicted_total_expense = bulan1
-    ? parseFloat((bulan1.proporsi_terhadap_pendapatan * 100).toFixed(2))
+
+  // Ambil pendapatan bulan ini dari monthly_analytics
+  const currentMonthVal = currentMonth();
+  const { data: analyticsRow } = await supabase
+    .from('monthly_analytics')
+    .select('monthly_income')
+    .eq('user_id', userId)
+    .eq('month', currentMonthVal)
+    .maybeSingle();
+
+  const income = analyticsRow?.monthly_income ?? 0;
+  const predicted_total_expense = (bulan1 && income > 0)
+    ? Math.round(bulan1.proporsi_terhadap_pendapatan * income)
     : null;
 
   // ── Persist to ai_results (fire-and-forget) ───────────────────────────────
