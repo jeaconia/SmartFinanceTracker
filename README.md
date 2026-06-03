@@ -2,7 +2,7 @@
 
 # SmartFinanceTracker
 
-<img src="Front-End\assets\Moni-Logo.png" width="200" />
+<img src="FrontEnd\assets\Moni-Logo.png" width="200" />
 
 </div>
 
