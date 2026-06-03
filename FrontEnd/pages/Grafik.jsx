@@ -25,6 +25,10 @@ export default function Grafik({ theme, lang = "en" }) {
       .then(setPieIncome)
       .catch(console.error);
 
+    API.getTrendChart(trendMonths)
+      .then(setChart)
+      .catch(console.error);
+
     API.listTransactions({})
       .then(r => setRecent(r.data?.slice(0, 6) || []))
       .catch(console.error);
@@ -32,7 +36,8 @@ export default function Grafik({ theme, lang = "en" }) {
     API.getPrediction()
       .then(setPred)
       .catch(console.error);
-  }, [month]);
+
+  }, [month, trendMonths]);
 
   return (
     <div style={{ padding:"20px 24px", animation:"fadeIn .3s ease" }}>
@@ -87,7 +92,7 @@ export default function Grafik({ theme, lang = "en" }) {
           </div>
           <BarChart data={chart} h={140} />
         </div>
-        {pred && pred.prediksi > 0 && (
+        {pred && (
           <div style={{
             position: "relative",
             background: "linear-gradient(145deg, #1e3a14 0%, #2d5220 40%, #3d6b2a 100%)",
@@ -133,7 +138,9 @@ export default function Grafik({ theme, lang = "en" }) {
               lineHeight:1.1, marginBottom:10,
               textShadow:"0 2px 8px rgba(0,0,0,0.2)"
             }}>
-              {fmtS(pred.prediksi)}
+              {pred?.prediksi > 0
+                ? fmtS(pred.prediksi)
+                : "No prediction available"}
             </div>
 
             {/* Divider */}
