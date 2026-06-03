@@ -1,6 +1,6 @@
 <div align="center">
 
-# SmartFinanceTracker
+#Moni: Smart Finance Tracker
 
 <img src="FrontEnd\assets\Moni-Logo.png" width="200" />
 
