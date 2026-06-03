@@ -39,10 +39,10 @@ def custom_mae_huber_loss(y_true, y_pred):
 # ============================================================
 
 BASE_DIR     = os.path.dirname(os.path.abspath(__file__))
-BUNDLE_PATH  = os.path.join(BASE_DIR, "model_bundle.pkl")
+BUNDLE_PATH  = os.path.join(BASE_DIR, "model.pkl")
 
 if not os.path.exists(BUNDLE_PATH):
-    raise FileNotFoundError(f"model_bundle.pkl tidak ditemukan di {BASE_DIR}")
+    raise FileNotFoundError(f"model.pkl tidak ditemukan di {BASE_DIR}")
 
 import keras
 with keras.saving.custom_object_scope({"custom_mae_huber_loss": custom_mae_huber_loss}):
