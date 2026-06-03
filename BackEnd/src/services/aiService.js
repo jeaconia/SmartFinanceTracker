@@ -347,29 +347,11 @@ async function getBudgetRecommendation(userId) {
   };
 }
 
-// ─── getSpendingLabel ─────────────────────────────────────────────────────────
+// ─── getSpendingLabel (Model 1 — Spending Persona Classifier) ─────────────────
+const { getSpendingPersona } = require('./model1Service');
+
 async function getSpendingLabel(userId, month) {
-  if (!AI_SERVICE_URL) {
-    throw new Error('AI_SERVICE_URL is not configured in environment variables');
-  }
-
-  let response;
-  try {
-    response = await fetch(`${AI_SERVICE_URL}/classify`, {
-      method:  'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ user_id: userId, month }),
-    });
-  } catch (networkErr) {
-    throw new Error(`AI service unreachable: ${networkErr.message}`);
-  }
-
-  if (!response.ok) {
-    const errText = await response.text().catch(() => '');
-    throw new Error(`AI service returned ${response.status}: ${errText}`);
-  }
-
-  return response.json();
+  return getSpendingPersona(userId, month);
 }
 
 // ─── predictNextMonthExpense ──────────────────────────────────────────────────

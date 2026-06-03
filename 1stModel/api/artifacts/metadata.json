@@ -1,0 +1,57 @@
+{
+  "overspending_threshold": 1.0,
+  "p33_pct_kebutuhan": 0.42048540568741194,
+  "p67_pct_kebutuhan": 0.4349303415131431,
+  "persona_classes": [
+    "balanced",
+    "overspending",
+    "saver",
+    "spender"
+  ],
+  "kebutuhan_cats": [
+    "cat_Perumahan",
+    "cat_Makanan",
+    "cat_Kesehatan",
+    "cat_Tagihan",
+    "cat_Transportasi"
+  ],
+  "gayahidup_cats": [
+    "cat_Hiburan",
+    "cat_Belanja",
+    "cat_Traveling",
+    "cat_Pakaian",
+    "cat_Elektronik",
+    "cat_Olahraga",
+    "cat_Sosial",
+    "cat_Hewan Peliharaan",
+    "cat_Anak-Anak",
+    "cat_Pendidikan"
+  ],
+  "model_feats": [
+    "std_ratio",
+    "ratio_range",
+    "trend",
+    "avg_keluar",
+    "std_keluar",
+    "avg_transaksi",
+    "pendapatan_bulanan",
+    "cat_Anak-Anak",
+    "cat_Belanja",
+    "cat_Elektronik",
+    "cat_Hewan Peliharaan",
+    "cat_Hiburan",
+    "cat_Kesehatan",
+    "cat_Makanan",
+    "cat_Olahraga",
+    "cat_Pakaian",
+    "cat_Pendidikan",
+    "cat_Perumahan",
+    "cat_Sosial",
+    "cat_Tagihan",
+    "cat_Transportasi",
+    "cat_Traveling",
+    "pct_kebutuhan",
+    "pct_gaya_hidup"
+  ],
+  "n_num_features": 24
+}
