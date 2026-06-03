@@ -88,14 +88,75 @@ export default function Grafik({ theme, lang = "en" }) {
           <BarChart data={chart} h={140} />
         </div>
         {pred && pred.prediksi > 0 && (
-          <div style={{ background:"linear-gradient(135deg,#3A5C28,#5a6b3a)", borderRadius:18, padding:16, color:"white" }}>
-            <div style={{ fontWeight:800, fontSize:14, marginBottom:3 }}>{t.prediksi}</div>
-            <div style={{ fontSize:11, opacity:0.75, marginBottom:8 }}>{t.basedOnAI}</div>
-            <div style={{ fontSize:26, fontWeight:900 }}>{fmtS(pred.prediksi)}</div>
-            {pred.context?.change_pct != null && (
-              <div style={{ fontSize: 11, opacity: 0.8, marginTop: 4 }}>
-                {pred.context.change_pct > 0 ? "▲" : "▼"} {Math.abs(pred.context.change_pct)}% {t.fromLastMonth}
+          <div style={{
+            position: "relative",
+            background: "linear-gradient(145deg, #1e3a14 0%, #2d5220 40%, #3d6b2a 100%)",
+            borderRadius: 18,
+            padding: "20px 18px",
+            color: "white",
+            overflow: "hidden",
+            boxShadow: "0 8px 32px rgba(42, 90, 28, 0.35)",
+          }}>
+            {/* Decorative circles */}
+            <div style={{
+              position:"absolute", top:-28, right:-28,
+              width:110, height:110, borderRadius:"50%",
+              background:"rgba(255,255,255,0.05)", pointerEvents:"none"
+            }}/>
+            <div style={{
+              position:"absolute", bottom:-18, right:18,
+              width:70, height:70, borderRadius:"50%",
+              background:"rgba(255,255,255,0.04)", pointerEvents:"none"
+            }}/>
+
+            {/* AI Badge */}
+            <div style={{
+              display:"inline-flex", alignItems:"center", gap:5,
+              background:"rgba(255,255,255,0.12)",
+              border:"1px solid rgba(255,255,255,0.2)",
+              borderRadius:999, padding:"3px 10px",
+              fontSize:10, fontWeight:700, letterSpacing:"0.05em",
+              marginBottom:14, textTransform:"uppercase"
+            }}>
+              <span style={{ fontSize:12 }}>🤖</span>
+              {t.basedOnAI}
+            </div>
+
+            {/* Title */}
+            <div style={{ fontSize:11, fontWeight:600, opacity:0.7, marginBottom:4, letterSpacing:"0.03em" }}>
+              {t.prediksi}
+            </div>
+
+            {/* Main Amount */}
+            <div style={{
+              fontSize:28, fontWeight:900, letterSpacing:"-0.5px",
+              lineHeight:1.1, marginBottom:10,
+              textShadow:"0 2px 8px rgba(0,0,0,0.2)"
+            }}>
+              {fmtS(pred.prediksi)}
+            </div>
+
+            {/* Divider */}
+            <div style={{ height:1, background:"rgba(255,255,255,0.12)", marginBottom:10 }}/>
+
+            {/* Change indicator */}
+            {pred.context?.change_pct != null ? (
+              <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+                <span style={{
+                  display:"inline-flex", alignItems:"center", justifyContent:"center",
+                  width:22, height:22, borderRadius:6,
+                  background: pred.context.change_pct > 0 ? "rgba(255,100,100,0.25)" : "rgba(100,255,150,0.2)",
+                  fontSize:11, fontWeight:800,
+                  color: pred.context.change_pct > 0 ? "#ff8f8f" : "#7dffab",
+                }}>
+                  {pred.context.change_pct > 0 ? "↑" : "↓"}
+                </span>
+                <span style={{ fontSize:11, opacity:0.8 }}>
+                  <strong style={{ opacity:1 }}>{Math.abs(pred.context.change_pct)}%</strong> {t.fromLastMonth}
+                </span>
               </div>
+            ) : (
+              <div style={{ fontSize:10, opacity:0.5 }}>— {t.fromLastMonth}</div>
             )}
           </div>
         )}
