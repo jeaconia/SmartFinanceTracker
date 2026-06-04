@@ -62,7 +62,7 @@ Produk akhir telah berhasil dideploy dan dapat diakses secara publik melalui apl
 ## Kontributor
 1. **CDCC284D6X2658 - Rudh Renata - Data Scientist:** Melakukan pre-processing data, EDA (Exploratory Data Analysis), menjawab pertanyaan bisnis, serta melakukan deploy
 2. **CACC014D6X0953 - Elsa Amelia Tampubolon - AI Engineer:** Melaukan scraping data dan membangun model 
-3. **CACC014D6Y2314 - Ketut Bayu Dharma Purusha - AI Engineer:** Membangun model
+3. **CACC014D6Y2314 - Ketut Bayu Dharma Purusha - AI Engineer:** Membangun model untuk label persona dengan pendekatan wide and deep model dan mendeploy model dengan FastAPI
 4. **CFCC014D6X1961 - Jeaconia Elfrida Tiono - Full-Stack Web Developer:** Membangun seluruh fitur pada front-end web.
 5. **CFCC014D6X2054 - Alexa Paramitha - Full-Stack Web Developer:** Membangun seluruh fitur pada back-end web.
 
