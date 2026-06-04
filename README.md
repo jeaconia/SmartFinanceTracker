@@ -176,9 +176,9 @@ Aplikasi akan terbuka otomatis di **`http://localhost:3000`**.
 
 Terdapat **tiga model** yang perlu dijalankan secara terpisah, masing-masing di port yang berbeda.
 
-#### Pilihan A — Menggunakan Python (pip)
+#### Pilihan A: Menggunakan Python (pip)
 
-**Model 1 — Spending Persona Classifier** (port `8001`):
+**Model 1: Spending Persona Classifier** (port `8001`):
 
 ```bash
 cd SpendingPersonaModel/api
@@ -186,7 +186,7 @@ pip install -r requirements.txt
 uvicorn spending_persona_api_v2:app --host 0.0.0.0 --port 8001 --reload
 ```
 
-**Model 2 — Auto Budgeting Model** (port `8002`):
+**Model 2: Auto Budgeting Model** (port `8002`):
 
 ```bash
 cd AutoBudgetingModel/api
@@ -194,7 +194,7 @@ pip install -r requirements.txt
 uvicorn main:app --host 0.0.0.0 --port 8002 --reload
 ```
 
-**Model 3 — Expense Prediction Model** (port `8003`):
+**Model 3: Expense Prediction Model** (port `8003`):
 
 ```bash
 cd ExpensePredictionModel/api
@@ -202,9 +202,9 @@ pip install -r requirements.txt
 uvicorn main:app --host 0.0.0.0 --port 8003 --reload
 ```
 
-#### Pilihan B — Menggunakan Docker
+#### Pilihan B: Menggunakan Docker
 
-**Model 1 — Spending Persona Classifier:**
+**Model 1: Spending Persona Classifier:**
 
 ```bash
 cd SpendingPersonaModel/api
@@ -212,7 +212,7 @@ docker build -t spending-persona-model .
 docker run -p 8001:8000 spending-persona-model
 ```
 
-**Model 2 — Auto Budgeting Model:**
+**Model 2: Auto Budgeting Model:**
 
 ```bash
 cd AutoBudgetingModel/api
@@ -220,7 +220,7 @@ docker build -t auto-budgeting-model .
 docker run -p 8002:8000 auto-budgeting-model
 ```
 
-**Model 3 — Expense Prediction Model:**
+**Model 3: Expense Prediction Model:**
 
 ```bash
 cd ExpensePredictionModel/api
