@@ -32,7 +32,7 @@ Produk akhir telah berhasil dideploy dan dapat diakses secara publik melalui apl
 2. **CACC014D6X0953 - Elsa Amelia Tampubolon - AI Engineer:** Melaukan scraping data dan membangun model 
 3. **CACC014D6Y2314 - Ketut Bayu Dharma Purusha - AI Engineer:** Membangun model
 4. **CFCC014D6X1961 - Jeaconia Elfrida Tiono - Full-Stack Web Developer:** Membangun seluruh fitur pada front-end web.
-5. **CFCC014D6X2054 - Alexa Paramitha - Full-Stack Web Developer:** Membangun Membangun seluruh fitur pada back-end web.
+5. **CFCC014D6X2054 - Alexa Paramitha - Full-Stack Web Developer:** Membangun seluruh fitur pada back-end web.
 
 ---
 ## Menjalankan Proyek Secara Lokal
