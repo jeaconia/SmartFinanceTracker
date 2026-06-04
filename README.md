@@ -240,3 +240,129 @@ docker run -p 8003:8000 expense-prediction-model
 - Pastikan **semua layanan sudah berjalan** sebelum menggunakan fitur AI di aplikasi.
 - File `.env` **tidak boleh** di-commit ke repositori, pastikan sudah terdaftar di `.gitignore`.
 - Ketiga model ML berjalan secara independen; jika hanya ingin mengembangkan BackEnd/FrontEnd, model yang tidak dibutuhkan bisa dilewati (fitur terkait akan mengembalikan error).
+
+
+---
+## Data Science
+
+### Ringkasan Dataset
+
+| Atribut | Detail |
+|---------|--------|
+| Jumlah baris (raw) | 269.743 |
+| Jumlah baris (setelah cleaning) | 269.720 |
+| Jumlah pengguna unik | 1.000 |
+| Periode data | Juni 2025 – Mei 2026 (12 bulan) |
+| Jumlah kolom | 9 |
+| Kategori pengeluaran | 15 |
+| Kota | 55 |
+| Missing values | 0 |
+| Duplikat dihapus | 23 |
+
+**Karakteristik pengguna:**
+- Pendapatan bulanan: Rp3 juta – Rp15 juta (rata-rata ≈ Rp9,05 juta)
+- Total pengeluaran bulanan rata-rata: Rp6,63 juta (~73% pendapatan)
+- Pengeluaran per transaksi: rata-rata ≈ Rp295 ribu, maksimum Rp2,44 juta
+- Distribusi status pengguna: **Normal 85,0%** | **Overspending 15,0%**
+
+> **Catatan:** Distribusi jumlah transaksi per kategori sangat seragam (17.922–18.045 transaksi) dan setiap pengguna memiliki semua 15 kategori. Pola ini mengindikasikan dataset bersifat **sintetik**, sehingga temuan analisis perlu dikontekstualisasikan sebagai eksplorasi pola keuangan pada data simulasi.
+
+---
+
+### Proses Data Science
+
+#### 1. Data Cleaning & Quality Check
+
+- **Missing values:** Seluruh 9 kolom bersih (0 missing values) — tidak diperlukan imputasi.
+- **Duplikasi:** Ditemukan dan dihapus 23 baris duplikat; dataset final berjumlah 269.720 baris.
+- **Validasi kolom turunan:** `rata_rata_transaksi` terbukti konsisten secara matematis (`total_pengeluaran / jumlah_transaksi`). Setiap pengguna memiliki satu nilai pendapatan tetap dan satu kota tetap sepanjang seluruh data.
+
+#### 2. Exploratory Data Analysis (EDA)
+
+**Analisis Univariat:**
+- Distribusi pendapatan bulanan relatif merata di rentang Rp3–15 juta, merepresentasikan pengguna dari berbagai lapisan ekonomi secara seimbang.
+- Distribusi total pengeluaran menunjukkan pola *right-skewed* — mayoritas pengguna berpengeluaran moderat dengan 4,14% outlier batas atas.
+- Distribusi *spending growth rate* berkisar -46% s/d +86% (mean 2,64%), dengan banyak observasi bernilai 0% (pengeluaran stabil antar bulan).
+- Rasio pengeluaran/pendapatan: 53,3% observasi pada rentang 0,50–0,75; 21,2% pada rentang 0,75–1,0; 15,0% di atas 1,0 (overspending).
+
+**Analisis Bivariat & Korelasi:**
+- Pendapatan bulanan berkorelasi positif sedang dengan total pengeluaran (r = 0,58) — pengguna berpenghasilan lebih tinggi cenderung berbelanja lebih besar.
+- `jumlah_transaksi` dan `spending_growth_rate` memiliki korelasi sangat lemah terhadap variabel lain (|r| < 0,15).
+- Tren median pengeluaran bulanan sangat stabil (Rp245–252 ribu/transaksi) tanpa lonjakan musiman yang signifikan sepanjang 12 bulan.
+- Kota Manado, Nabire, dan Merauke mencatat median pengeluaran tertinggi; rasio pengeluaran/pendapatan per kota berkisar 0,72–0,84.
+
+**Analisis Lanjutan:**
+- **Persona Finansial:** 85% pengguna tergolong *Saver* (rasio < 0,75); 15% *Overspend*. Tidak ditemukan kategori *Balanced* atau *Extreme Overspend*.
+- **Saving Behavior:** Mayoritas observasi masuk kategori *Moderate Saving*, diikuti *High Saving*; hanya sebagian kecil yang mengalami defisit.
+- **Kategori Dominan:** Lebih dari 80% pengguna menjadikan **Perumahan** sebagai kategori pengeluaran terbesar, jauh melampaui kategori lainnya.
+
+#### 3. Feature Engineering
+
+Fitur-fitur turunan yang dibuat untuk mendukung pemodelan:
+
+| Fitur | Deskripsi |
+|-------|-----------|
+| `rasio_pengeluaran` | Total pengeluaran / pendapatan bulanan — variabel paling diskriminatif |
+| `sisa_anggaran` | Pendapatan dikurangi total pengeluaran pada periode berjalan |
+| `flag_overspend` | Binary flag: 1 jika rasio_pengeluaran > 1,0 |
+| `log_total_pengeluaran` | Log transform total pengeluaran untuk menstabilkan distribusi skewed |
+| `delta_pengeluaran` | Selisih pengeluaran bulan ini vs bulan lalu |
+| `gap_vs_3bulan` | Selisih pengeluaran bulan ini vs rata-rata 3 bulan terakhir |
+| `persona_finansial` | Label segmen pengguna berdasarkan pola rasio pengeluaran |
+| `saving_behavior` | Klasifikasi perilaku menabung per bulan |
+
+---
+
+### Pertanyaan Bisnis & Temuan
+
+#### BQ 1 — Kategori Pengeluaran Dominan (Jun 2025 – Mei 2026)
+
+> *"Kategori pengeluaran apa yang secara konsisten menyumbang proporsi tertinggi dari total pengeluaran bulanan pengguna?"*
+
+**Temuan utama:**
+- Kategori **Perumahan** menempati posisi teratas secara konsisten di seluruh 12 bulan dengan rata-rata proporsi **±11–12% per bulan**.
+- Lima kategori teratas — **Perumahan, Tagihan, Makanan, Pendidikan, Elektronik** — bersama-sama berkontribusi hampir **50% dari total pengeluaran keseluruhan**.
+- Pola sangat stabil: tidak ada pergeseran kategori dominan sepanjang periode; fluktuasi kecil antar bulan tidak membentuk tren naik atau turun yang sistematis.
+- Kategori terendah secara konsisten: Olahraga, Hewan Peliharaan, dan Sosial.
+
+#### BQ 2 — Normal vs Overspending (Jun 2025 – Mei 2026)
+
+> *"Apakah terdapat perbedaan rasio pengeluaran antara kelompok Normal dan Overspending, serta kategori apa yang paling membedakannya?"*
+
+**Temuan utama:**
+- Perbedaan rasio pengeluaran antara kedua kelompok **signifikan secara statistik** (Welch t-test, p < 0,05) dengan ukuran efek yang besar (Cohen's d substansial).
+- Kelompok Overspending memiliki rasio > 1,0 secara **konsisten di seluruh 12 bulan** — bukan fenomena musiman.
+- Kategori yang paling membedakan kedua kelompok: **Perumahan, Elektronik, dan Tagihan** — bukan karena frekuensi transaksi lebih tinggi, melainkan karena **nilai nominal per transaksi** yang lebih besar pada kelompok Overspending.
+
+---
+
+### Rekomendasi Bisnis
+
+1. **Alert Otomatis:** Kirim notifikasi ketika pengeluaran Perumahan mencapai 15% dari pendapatan bulanan — threshold berbasis temuan dominasi kategori.
+2. **Intervensi Dini:** Identifikasi pengguna Overspending sejak bulan pertama, tampilkan ringkasan kategori pemborosan (Elektronik & Tagihan) beserta simulasi penghematan 10–20%.
+3. **Fitur Utama Model:** Gunakan `rasio_pengeluaran` sebagai variabel utama dalam clustering dan model prediksi — variabel ini paling diskriminatif secara statistik dan konsisten sepanjang waktu.
+
+---
+
+### Menjalankan Dashboard EDA (Streamlit)
+
+Dashboard eksplorasi data interaktif tersedia sebagai Streamlit app.
+
+**Prasyarat:**
+
+```bash
+pip install -r requirements.txt
+```
+
+**Jalankan dashboard:**
+
+```bash
+streamlit run dashboard.py
+```
+
+Dashboard akan terbuka di **`http://localhost:8501`** dan menampilkan:
+- Metrik ringkasan dataset (jumlah user, transaksi, periode, distribusi status)
+- Heatmap proporsi kategori pengeluaran per bulan
+- Distribusi spending ratio Normal vs Overspending (histogram, boxplot, pie chart)
+- Analisis korelasi, tren bulanan, dan pengeluaran per kota
+- Filter interaktif berdasarkan kategori, kota, dan periode waktu
