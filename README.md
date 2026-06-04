@@ -36,3 +36,175 @@ Produk akhir telah berhasil dideploy dan dapat diakses secara publik melalui apl
 
 ---
 ## Menjalankan Proyek Secara Lokal
+
+### Prasyarat
+
+Pastikan tools berikut sudah terinstall di sistem kamu:
+
+| Tool | Versi Minimum | Keterangan |
+|------|--------------|------------|
+| [Node.js](https://nodejs.org/) | `>= 18.0.0` | Untuk BackEnd & FrontEnd |
+| [Python](https://www.python.org/) | `>= 3.11` | Untuk ML Model API |
+| [Docker](https://www.docker.com/) *(opsional)* | — | Alternatif untuk menjalankan ML Model |
+
+---
+
+### Struktur Proyek
+
+```
+SmartFinanceTracker/
+├── BackEnd/                      # REST API (Express.js)
+├── FrontEnd/                     # Antarmuka pengguna (React + Vite)
+├── AutoBudgetingModel/api/       # ML Model — Auto Budgeting (FastAPI)
+├── SpendingPersonaModel/api/     # ML Model — Spending Persona Classifier (FastAPI)
+└── ExpensePredictionModel/api/   # ML Model — Expense Prediction (FastAPI)
+```
+
+---
+
+### 1. Clone Repositori
+
+```bash
+git clone https://github.com/<username>/SmartFinanceTracker.git
+cd SmartFinanceTracker
+```
+
+---
+
+### 2. Konfigurasi Environment Variables
+
+#### BackEnd
+
+Buat file `.env` di dalam folder `BackEnd/`:
+
+```env
+# Supabase
+SUPABASE_URL=https://<project-id>.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+
+# URL ML Model
+MODEL1_SERVICE_URL=http://localhost:8001   # Spending Persona Model
+MODEL2_SERVICE_URL=http://localhost:8002   # Auto Budgeting Model
+AI_SERVICE_URL=http://localhost:8003       # Expense Prediction Model
+
+# Email (Resend)
+RESEND_API_KEY=your_resend_api_key
+EMAIL_FROM=no-reply@yourdomain.com
+
+# URL Frontend (untuk CORS)
+FRONTEND_URL=http://localhost:3000
+```
+
+> Kredensial Supabase dapat diperoleh dari **Supabase Dashboard → Project Settings → API**.
+
+#### FrontEnd
+
+Buat file `.env` di dalam folder `FrontEnd/`:
+
+```env
+VITE_API_URL=http://localhost:3001
+```
+
+---
+
+### 3. Menjalankan BackEnd
+
+```bash
+cd BackEnd
+npm install
+npm run dev
+```
+
+Server akan berjalan di **`http://localhost:3001`**.
+
+> Gunakan `npm start` untuk mode produksi (tanpa hot-reload).
+
+---
+
+### 4. Menjalankan FrontEnd
+
+```bash
+cd FrontEnd
+npm install
+npm run dev
+```
+
+Aplikasi akan terbuka otomatis di **`http://localhost:3000`**.
+
+---
+
+### 5. Menjalankan ML Model API
+
+Terdapat **tiga model** yang perlu dijalankan secara terpisah, masing-masing di port yang berbeda.
+
+#### Pilihan A — Menggunakan Python (pip)
+
+**Model 1 — Spending Persona Classifier** (port `8001`):
+
+```bash
+cd SpendingPersonaModel/api
+pip install -r requirements.txt
+uvicorn spending_persona_api_v2:app --host 0.0.0.0 --port 8001 --reload
+```
+
+**Model 2 — Auto Budgeting Model** (port `8002`):
+
+```bash
+cd AutoBudgetingModel/api
+pip install -r requirements.txt
+uvicorn main:app --host 0.0.0.0 --port 8002 --reload
+```
+
+**Model 3 — Expense Prediction Model** (port `8003`):
+
+```bash
+cd ExpensePredictionModel/api
+pip install -r requirements.txt
+uvicorn main:app --host 0.0.0.0 --port 8003 --reload
+```
+
+#### Pilihan B — Menggunakan Docker
+
+**Model 1 — Spending Persona Classifier:**
+
+```bash
+cd SpendingPersonaModel/api
+docker build -t spending-persona-model .
+docker run -p 8001:8000 spending-persona-model
+```
+
+**Model 2 — Auto Budgeting Model:**
+
+```bash
+cd AutoBudgetingModel/api
+docker build -t auto-budgeting-model .
+docker run -p 8002:8000 auto-budgeting-model
+```
+
+**Model 3 — Expense Prediction Model:**
+
+```bash
+cd ExpensePredictionModel/api
+docker build -t expense-prediction-model .
+docker run -p 8003:8000 expense-prediction-model
+```
+
+---
+
+### 6. Ringkasan Port
+
+| Layanan | Port | Env Variable |
+|---------|------|-------------|
+| FrontEnd (Vite Dev Server) | `3000` | — |
+| BackEnd (Express.js) | `3001` | — |
+| Spending Persona Model | `8001` | `MODEL1_SERVICE_URL` |
+| Auto Budgeting Model | `8002` | `MODEL2_SERVICE_URL` |
+| Expense Prediction Model | `8003` | `AI_SERVICE_URL` |
+
+---
+
+### Catatan
+
+- Pastikan **semua layanan sudah berjalan** sebelum menggunakan fitur AI di aplikasi.
+- File `.env` **tidak boleh** di-commit ke repositori — pastikan sudah terdaftar di `.gitignore`.
+- Ketiga model ML berjalan secara independen; jika hanya ingin mengembangkan BackEnd/FrontEnd, model yang tidak dibutuhkan bisa dilewati (fitur terkait akan mengembalikan error).
