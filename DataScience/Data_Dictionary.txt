@@ -1,0 +1,105 @@
+| No | Nama Kolom                | Tipe Data            | Deskripsi                                                                                  | Contoh Nilai                                | Satuan / Format       |
+| -- | ------------------------- | -------------------- | ------------------------------------------------------------------------------------------ | ------------------------------------------- | --------------------- |
+| 1  | `id_pengguna`             | Object (String)      | Kode unik identitas pengguna yang digunakan untuk membedakan setiap individu dalam dataset | `USR000001`                                 | Format ID             |
+| 2  | `tanggal`                 | Date / Object        | Tanggal pencatatan transaksi atau aktivitas keuangan pengguna                              | `2025-05-16`                                | `YYYY-MM-DD`          |
+| 3  | `bulan`                   | Integer              | Bulan terjadinya transaksi yang diekstraksi dari tanggal                                   | `5`                                         | 1–12                  |
+| 4  | `tahun`                   | Integer              | Tahun pencatatan transaksi                                                                 | `2025`                                      | Tahun                 |
+| 5  | `Kota`                    | Kategorikal (Object) | Lokasi atau kota tempat pengguna berada                                                    | `Sorong`                                    | Nama kota             |
+| 6  | `Kategori`                | Kategorikal (Object) | Jenis/kategori pengeluaran pengguna. Terdiri dari 5 nilai tetap: `Belanja`, `Kesehatan`, `Hiburan`, `Sosial`, `Hewan Peliharaan` | `Belanja`, `Kesehatan`, `Hiburan`, `Sosial`, `Hewan Peliharaan` | Kategori transaksi (5 nilai enum) |
+| 7  | `pendapatan_bulanan`      | Integer              | Total pendapatan pengguna dalam satu bulan                                                 | `9551000`                                   | Rupiah (Rp)           |
+| 8  | `total_pengeluaran`       | Float                | Total keseluruhan pengeluaran pengguna lintas semua kategori pada periode tertentu (bukan per kategori) | `6755000`                                   | Rupiah (Rp)           |
+| 9  | `jumlah_transaksi`        | Integer              | Jumlah (count) seluruh transaksi pengguna lintas semua kategori selama periode pengamatan  | `40`                                        | Jumlah transaksi      |
+| 10 | `rata_rata_transaksi`     | Float                | Nilai rata-rata nominal per transaksi pengguna                                             | `169000`                                    | Rupiah (Rp/transaksi) |
+| 11 | `spending_growth_rate`    | Float              | Persentase perubahan pengeluaran dibanding periode sebelumnya                              | `16`, `-9`, `3`                             | Persentase (%)        |
+| 12 | `pengeluaran_bulan_lalu`  | Float                | Total pengeluaran pengguna pada bulan sebelumnya                                           | `6768000`                                   | Rupiah (Rp)           |
+| 13 | `rata_pengeluaran_3bulan` | Float                | Rata-rata pengeluaran pengguna selama tiga bulan terakhir                                  | `6461000`                                   | Rupiah (Rp)           |
+
+## Klasifikasi Variabel
+
+### 1. Variabel Identitas
+
+* `id_pengguna`
+
+Digunakan sebagai **identifier**, biasanya **tidak dipakai langsung dalam model machine learning**, tetapi penting untuk analisis per pengguna.
+
+### 2. Variabel Waktu (Temporal)
+
+* `tanggal`
+* `bulan`
+* `tahun`
+
+Digunakan untuk:
+
+* Analisis tren
+* Time series sederhana
+* Analisis bulanan/tahunan
+* Feature engineering waktu
+
+### 3. Variabel Kategorikal
+
+* `Kota`
+* `Kategori`
+
+Contoh kategori pengeluaran:
+
+* Belanja
+* Kesehatan
+* Hiburan
+* Sosial
+* Hewan Peliharaan
+
+Digunakan pada:
+
+* Analisis distribusi
+* Segmentasi pengguna
+* Encoding untuk ML
+
+### 4. Variabel Numerik Finansial
+
+**4a. Pendapatan**
+
+* `pendapatan_bulanan` — Total pendapatan pengguna dalam satu bulan
+
+**4b. Pengeluaran Periode Berjalan**
+
+* `total_pengeluaran` — Total pengeluaran keseluruhan (lintas semua kategori) pada bulan/periode saat ini
+* `jumlah_transaksi` — Jumlah (count) transaksi keseluruhan pada periode saat ini
+* `rata_rata_transaksi` — Rata-rata nominal per transaksi pada periode saat ini
+
+**4c. Riwayat Pengeluaran (Periode Sebelumnya)**
+
+* `pengeluaran_bulan_lalu` — Total pengeluaran pada bulan sebelumnya (t-1); digunakan sebagai baseline perbandingan
+* `rata_pengeluaran_3bulan` — Rata-rata pengeluaran tiga bulan terakhir; mencerminkan tren jangka pendek
+
+**4d. Perubahan Perilaku Pengeluaran**
+
+* `spending_growth_rate` — Persentase perubahan pengeluaran bulan ini dibanding bulan sebelumnya; nilai positif = meningkat, negatif = menurun, nol = stabil
+
+---
+
+## Definisi Matematis Beberapa Fitur
+
+### Rata-rata transaksi
+
+\text{Rata-rata Transaksi}=\frac{\text{Total Pengeluaran}}{\text{Jumlah Transaksi}}
+
+Mengukur nominal rata-rata setiap transaksi pengguna.
+
+---
+
+### Growth pengeluaran
+
+\text{Growth Rate}=\frac{P_t-P_{t-1}}{P_{t-1}}\times100%
+
+Keterangan:
+
+* (P_t) = pengeluaran saat ini
+* (P_{t-1}) = pengeluaran bulan sebelumnya
+
+Nilai:
+
+* Positif → pengeluaran meningkat
+* Negatif → pengeluaran menurun
+* Nol → stabil
+
+---
