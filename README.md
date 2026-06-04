@@ -13,7 +13,46 @@ Sering bingung uang habis untuk apa saja? Moni hadir untuk membantu menjawabnya!
 
 ---
 ## Fitur Aplikasi
+# Smart Finance Tracker
 
+Aplikasi pencatat keuangan pribadi berbasis web dengan fitur analisis AI, budgeting otomatis, dan visualisasi data keuangan.
+
+---
+
+## Fitur
+
+### 1. Dashboard
+- **Sisa Budget:** Menampilkan sisa anggaran bulan berjalan beserta total pemasukan dan pengeluaran.
+- **Insight Harian (AI):** Analisis pola keuangan harian berbasis AI dengan label status seperti *balanced* atau *spender*, dilengkapi tingkat akurasi.
+- **Label Pola Spending:** Pie chart yang mengelompokkan pengeluaran berdasarkan kategori bulan ini.
+- **Grafik Analisis Bulanan:** Grafik batang perbandingan pemasukan dan pengeluaran sepanjang tahun.
+- **Notifikasi Pengeluaran Rutin:** Pengingat otomatis untuk transaksi rutin yang sudah dijadwalkan.
+
+### 2. Grafik & Ringkasan
+- **Analisis per Periode:** Filter rentang waktu 3 bulan, 6 bulan, atau 1 tahun untuk melihat tren keuangan.
+- **Pengeluaran & Pemasukan per Kategori:** Visualisasi pie chart dengan persentase dan nominal tiap kategori.
+- **Transaksi Terbaru:** Daftar transaksi terkini dengan label kategori, tanggal, dan nominal.
+- **Prediksi Bulan Depan (AI):** Proyeksi total pengeluaran bulan berikutnya berdasarkan pola historis pengguna.
+
+### 3. Budgeting
+- **Reminder Overbudget:** Peringatan otomatis ketika pengeluaran suatu kategori melampaui anggaran yang ditetapkan.
+- **Rekomendasi Anggaran Otomatis (AI):** Saran batas anggaran ideal berdasarkan UMR daerah pengguna, menggunakan pembagian Kebutuhan 60% / Keinginan 20% / Tabungan 20%.
+- **Distribusi Anggaran:** Pie chart proporsi anggaran per kategori yang sudah dialokasikan.
+
+### 4. Catatan Keuangan
+- **Pemasukan:** Daftar semua catatan pendapatan (gaji, hadiah, reimburse, dll.) per bulan.
+- **Pengeluaran:** Daftar semua catatan pengeluaran beserta kategori dan tanggal.
+- **Rutin:** Pencatatan khusus untuk transaksi berulang setiap bulan sebagai dasar notifikasi pengingat.
+
+### 5. Pengaturan
+- Edit profil pengguna
+- Toggle dark mode
+- Pilihan bahasa: Indonesia / English
+
+### 6. Profil
+- Informasi akun pengguna
+- Edit profil
+- Log out
 
 ---
 ## Deployment Aplikasi
@@ -55,9 +94,9 @@ Pastikan tools berikut sudah terinstall di sistem kamu:
 SmartFinanceTracker/
 ├── BackEnd/                      # REST API (Express.js)
 ├── FrontEnd/                     # Antarmuka pengguna (React + Vite)
-├── AutoBudgetingModel/api/       # ML Model — Auto Budgeting (FastAPI)
-├── SpendingPersonaModel/api/     # ML Model — Spending Persona Classifier (FastAPI)
-└── ExpensePredictionModel/api/   # ML Model — Expense Prediction (FastAPI)
+├── AutoBudgetingModel/api/       # ML Model: Auto Budgeting (FastAPI)
+├── SpendingPersonaModel/api/     # ML Model: Spending Persona Classifier (FastAPI)
+└── ExpensePredictionModel/api/   # ML Model: Expense Prediction (FastAPI)
 ```
 
 ---
@@ -65,7 +104,7 @@ SmartFinanceTracker/
 ### 1. Clone Repositori
 
 ```bash
-git clone https://github.com/<username>/SmartFinanceTracker.git
+git clone https://github.com/jeaconia/SmartFinanceTracker.git
 cd SmartFinanceTracker
 ```
 
