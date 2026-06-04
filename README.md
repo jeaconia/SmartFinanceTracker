@@ -13,13 +13,6 @@ Sering bingung uang habis untuk apa saja? Moni hadir untuk membantu menjawabnya!
 
 ---
 ## Fitur Aplikasi
-# Smart Finance Tracker
-
-Aplikasi pencatat keuangan pribadi berbasis web dengan fitur analisis AI, budgeting otomatis, dan visualisasi data keuangan.
-
----
-
-## Fitur
 
 ### 1. Dashboard
 - **Sisa Budget:** Menampilkan sisa anggaran bulan berjalan beserta total pemasukan dan pengeluaran.
