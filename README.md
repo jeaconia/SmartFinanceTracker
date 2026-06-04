@@ -245,5 +245,5 @@ docker run -p 8003:8000 expense-prediction-model
 ### Catatan
 
 - Pastikan **semua layanan sudah berjalan** sebelum menggunakan fitur AI di aplikasi.
-- File `.env` **tidak boleh** di-commit ke repositori — pastikan sudah terdaftar di `.gitignore`.
+- File `.env` **tidak boleh** di-commit ke repositori, pastikan sudah terdaftar di `.gitignore`.
 - Ketiga model ML berjalan secara independen; jika hanya ingin mengembangkan BackEnd/FrontEnd, model yang tidak dibutuhkan bisa dilewati (fitur terkait akan mengembalikan error).
