@@ -211,20 +211,12 @@ def check_min_data(df_check, min_rows=2, context="grafik ini"):
 @st.cache_data
 def load_data():
 
-    possible_files = ("raw_dataset_personal_finance.csv")
+    import os
 
-    for file in possible_files:
-        try:
-            df = pd.read_csv(file)
-            break
-        except FileNotFoundError:
-            continue
-    else:
-        st.error(
-            "Dataset tidak ditemukan. "
-            "Pastikan file CSV berada pada folder yang sama dengan dashboard.py"
-        )
-        st.stop()
+    base_dir = os.path.dirname(__file__)
+    csv_path = os.path.join(base_dir, "raw_dataset_personal_finance.csv")
+
+    df = pd.read_csv(csv_path)
 
     df["tanggal"] = pd.to_datetime(df["tanggal"])
 
