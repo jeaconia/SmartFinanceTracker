@@ -1,6 +1,10 @@
 const supabase = require('../config/supabase');
 
-const VALID_CATEGORIES = ['Belanja', 'Kesehatan', 'Hiburan', 'Sosial', 'Hewan Peliharaan'];
+const VALID_CATEGORIES = [
+  'Makanan & Minuman', 'Belanja', 'Transportasi', 'Tagihan Tetap',
+  'Kesehatan', 'Hiburan', 'Pendidikan', 'Pakaian', 'Sosial',
+  'Olahraga', 'Traveling', 'Elektronik', 'Kost', 'Anak-Anak', 'Hewan Peliharaan'
+];
 const VALID_FREQUENCIES = ['daily', 'weekly', 'monthly'];
 
 // ── POST /api/recurring ───────────────────────────────────────────────────────

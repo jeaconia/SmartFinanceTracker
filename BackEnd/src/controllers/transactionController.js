@@ -1,7 +1,11 @@
 const supabase = require('../config/supabase');
 const { upsertMonthlyAnalytics } = require('../services/analyticsService');
 
-const VALID_CATEGORIES = ['Belanja', 'Kesehatan', 'Hiburan', 'Sosial', 'Hewan Peliharaan'];
+const VALID_CATEGORIES = [
+  'Makanan & Minuman', 'Belanja', 'Transportasi', 'Tagihan Tetap',
+  'Kesehatan', 'Hiburan', 'Pendidikan', 'Pakaian', 'Sosial',
+  'Olahraga', 'Traveling', 'Elektronik', 'Kost', 'Anak-Anak', 'Hewan Peliharaan'
+];
 const VALID_INCOME_CATEGORIES = ['Gaji', 'Hadiah', 'THR', 'Reimburse', 'Investasi'];
 const VALID_TYPES      = ['income', 'expense'];
 
